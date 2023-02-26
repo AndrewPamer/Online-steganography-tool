@@ -2,6 +2,12 @@
 #menu {
   text-align: center;
   color: #059142;
+  font-size: 26px;
+}
+
+
+hr {
+  color: #059142;
 }
 
 .button {
