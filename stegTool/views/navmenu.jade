@@ -1,9 +1,13 @@
 extends encode 
 
 block nav
-    #menu
-        h1 Online Steganography Tool
-        //hr
-        button(class="button") Encode 
-        button(class="button") Decode
-        //hr
+    #container
+        #menu
+            h1 Online Steganography Tool
+            button(class="button") Encode 
+            button(class="button") Decode
+        #encode
+            #image-upload
+                #image-box
+                    button(class="button") Upload Image
+                    #image-preview
