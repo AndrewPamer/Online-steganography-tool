@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('navmenu', { title: 'Online Steganography Tool' });
+  res.render('encode', { title: 'Online Steganography Tool' });
 });
 
 module.exports = router;
