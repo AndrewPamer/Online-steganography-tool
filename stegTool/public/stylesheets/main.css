@@ -6,3 +6,7 @@
 body {
     background-color: #221818;
 }
+
+image {
+    position: sticky;
+}
