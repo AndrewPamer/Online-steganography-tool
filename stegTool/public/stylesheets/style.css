@@ -5,16 +5,31 @@
   padding-left: 5px;
   padding-right:5px;
 }
+#messagebox{
+  width: 300px;
+  height: 300px;
+}
+#encodemessage{
+  display: flex-inline;
+  margin-left: 40%;
+  margin-top: -20%;
+  color: #059142;
+  border: 2px #059142;
 
+}
+
+#menu.h1.button{
+  display: inline-flex;
+}
 
 #menu {
   text-align: center;
   color: #059142;
   font-size: 26px;
-  margin-left: auto;
+  margin-left: 20%;
   margin-right: auto;
-  width: 619px;
-  border-bottom: 5px solid #059142;
+  width: 1111px;
+  border-bottom: 6px solid #059142;
   padding: 10px;
 }
 

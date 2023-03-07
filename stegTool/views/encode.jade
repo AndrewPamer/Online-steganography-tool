@@ -5,9 +5,16 @@ html
     link(rel="stylesheet", href="/stylesheets/main.css")
     link(rel='stylesheet', href='/stylesheets/style.css')
     title Online Steganography Tool
+    
   body
-    img(src="images/Logo.jpg")
+
     #container
       include ./navmenu
       include ./imageEncode
+      #encodemessage
+        label(for='message_box') Enter your message here:
+        br
+        textarea#messagebox(name='message_box' rows='4' cols='50')
+       
+      
       
