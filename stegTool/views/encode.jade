@@ -1,13 +1,17 @@
 doctype
-html
+html(lang="en-US")
   head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
     link(rel="stylesheet", href="https://fonts.googleapis.com/css?family=Roboto")
     link(rel="stylesheet", href="/stylesheets/main.css")
     link(rel='stylesheet', href='/stylesheets/style.css')
+
+    script(src="image.js" defer)
+    
     title Online Steganography Tool
   body
-    img(src="images/Logo.jpg")
-    #container
+    .container
       include ./navmenu
       include ./imageEncode
       

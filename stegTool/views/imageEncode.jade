@@ -1,7 +1,25 @@
-#encode
-    #image-upload
-         #image-box
-            form(method='post' enctype='multipart/form-data' action='/upload')
-            label(class = "button" for = "actual-btn") Upload Image
-                input(type='file' name='inputFile' onchange = 'form.submit()' id = "actual-btn" hidden)
-            #image-preview
+//- #encode
+//-     #image-upload
+//-          #image-box
+//-             form(method='post' enctype='multipart/form-data' action='/upload')
+//-             label(class = "button" for = "actual-btn") Upload Image
+//-                 input(type='file' name='inputFile' onchange = 'form.submit()' id = "actual-btn" hidden)
+//-             #image-preview
+
+.encoding
+    .image-upload-container
+        img(class="image" max-width="200px")
+        label(for="inputImage") Upload Image 
+        input(id="inputImage" name="inputImage" type="file" onchange="showImage()" accept="image/*")
+    .message-container
+        .message-input
+            label(for="messageInput") Input message 
+            textarea(id="messageInput" name="messageInput" row="4" cols="50")
+        //Encode Select
+        .encode-input
+            label(for="encodingMethod") Select Encoding Method 
+            select#encodingMethod(name="encodingMethod")
+                option(value="Option1") Option1 
+                option(value="Option2") Option2
+        button(class="button") Encode Image
+        
