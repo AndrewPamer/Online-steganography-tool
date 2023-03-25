@@ -1,15 +1,13 @@
 
 
 .encoding
-    .image-upload-container
-        img(class="image" max-width="200px")
-        label(for="inputImage") Upload Image
-        input(id="inputImage" name="inputImage" type="file" onchange="showImage()" accept="image/*")
+    .image-upload-container(ondrop="dropImage(event)" ondragover="dragImageOver(event)")
+        img(class="image before" max-width="200px" src="images/UploadIcon.svg")
+        input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept="image/*")
     .message-container
         .message-input
             label(for="messageInput") Input message 
-            textarea#messageInput(name='messageInput' rows='4' cols='50')            
-            p
+            textarea#messageInput(name='messageInput' rows='4' cols='50')
             span#wordCount 0
             |  Characters
 
