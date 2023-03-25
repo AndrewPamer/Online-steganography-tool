@@ -1,3 +1,4 @@
+// live word count 
 var messageInput = document.getElementById("messageInput");
 var wordCount = document.getElementById("wordCount");
 
