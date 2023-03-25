@@ -36,7 +36,7 @@ li:last-child {
 }
 
 a {
-  background-color: #06c258;
+  background-color: #059142;
   display: inline-block;
   padding: 15px;
   text-decoration: none;
@@ -44,11 +44,11 @@ a {
 }
 
 a:hover {
-  background-color: #059142;
+  background-color: #06c258;
 }
 
 a:active {
-  background-color: #06c258;
+  background-color: #059142;
 }
 
 /**********CONTAINER**********/
@@ -110,7 +110,7 @@ a:active {
 .image-upload-container {
   width: 50%;
   height: 500px;
-  border: 4px dotted white;
+  border: 1px dotted white;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -155,4 +155,37 @@ a:active {
 
 #wordcount {
   display: block;
+}
+
+/**********RESPONSIVENESS**********/
+
+@media screen and (max-width: 1000px) {
+  .container {
+    width: auto;
+  }
+}
+@media screen and (max-width: 780px) {
+  .image-upload-container {
+    width: auto;
+  }
+  .encoding {
+    display: block;
+  }
+  .message-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+@media screen and (max-width: 560px) {
+  .menu {
+    display: block;
+  }
+  .menu img {
+    margin: auto;
+    display: block;
+  }
+  h1 {
+    text-align: center;
+  }
 }
