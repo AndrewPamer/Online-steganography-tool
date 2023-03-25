@@ -8,7 +8,11 @@
     .message-container
         .message-input
             label(for="messageInput") Input message 
-            textarea(id="messageInput" name="messageInput" row="4" cols="50")
+            textarea#messageInput(name='messageInput' rows='4' cols='50')            
+            p
+            span#wordCount 0
+            |  Characters
+
         //Encode Select
         .encode-input
             label(for="encodingMethod") Select Encoding Method 
