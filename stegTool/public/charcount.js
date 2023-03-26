@@ -2,7 +2,8 @@
 var messageInput = document.getElementById("messageInput");
 var wordCount = document.getElementById("wordCount");
 
-messageInput.addEventListener("keyup",function(){
-    var characters = messageInput.value.split('');
-    wordCount.innerText = characters.length;
+messageInput.addEventListener("input", function() {
+  var count = messageInput.value.length;
+  wordCount.innerText = count;
 });
+
