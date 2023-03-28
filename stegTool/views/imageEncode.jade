@@ -1,10 +1,10 @@
 
 
-.encoding
-    .image-upload-container(ondrop="dropImage(event)" ondragover="dragImageOver(event)")
+article.encoding
+    section.image-upload-container(ondrop="dropImage(event)" ondragover="dragImageOver(event)")
         img(class="image before" max-width="200px" src="images/UploadIcon.svg")
         input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept="image/*")
-    .message-container
+    section.message-container
         .message-input
             label(for="messageInput") Input message 
             textarea#messageInput(name='messageInput' rows='4' cols='50')

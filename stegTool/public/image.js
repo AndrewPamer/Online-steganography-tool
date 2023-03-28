@@ -1,11 +1,5 @@
 //Where the image preview will show
-const imageShow = document.querySelector(".image");
-
-//Called when the user inputs and image from the 'Input Image' Button
-function imageInputFromButton() {
-  //Calls the function to show image
-  showImage(document.querySelector("#inputImage").files[0]);
-}
+const imagePreviewArea = document.querySelector(".image");
 
 //Previews the inputted image
 function showImage(image) {
@@ -19,12 +13,18 @@ function showImage(image) {
   reader.addEventListener(
     "load",
     () => {
-      imageShow.classList.remove("before");
-      imageShow.classList.add("after");
-      imageShow.src = reader.result;
+      imagePreviewArea.classList.remove("before");
+      imagePreviewArea.classList.add("after");
+      imagePreviewArea.src = reader.result;
     },
     false
   );
+}
+
+//Called when the user inputs and image from the 'Input Image' Button
+function imageInputFromButton() {
+  //Calls the function to show image
+  showImage(document.querySelector("#inputImage").files[0]);
 }
 
 function dropImage(event) {
@@ -38,7 +38,6 @@ function dropImage(event) {
       }
     });
   }
-  showImage();
 }
 
 function dragImageOver(event) {
