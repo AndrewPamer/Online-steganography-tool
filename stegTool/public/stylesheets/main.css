@@ -9,6 +9,12 @@ h1 {
   color: #059142;
 }
 
+h2 {
+  font-size: 30px;
+  color: #059142;
+  text-align: center;
+}
+
 label {
   color: white;
 }
