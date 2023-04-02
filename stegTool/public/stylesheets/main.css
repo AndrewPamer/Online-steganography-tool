@@ -111,9 +111,19 @@ a:active {
   border-right: 1px solid black;
 }
 
+#active {
+  /* display: */
+  visibility: visible;
+}
+
+#inactive {
+  display: none;
+  visibility: hidden;
+}
+
 /**********IMAGE UPLOAD**********/
 
-.image-upload-container {
+.image-container {
   width: 50%;
   height: 500px;
   border: 1px dotted white;
@@ -123,7 +133,8 @@ a:active {
   position: relative;
 }
 
-.encoding {
+.encoding,
+.decoding {
   display: flex;
   justify-content: space-between;
 }
@@ -142,17 +153,17 @@ a:active {
   display: block;
 }
 
-.image-upload-container img.after {
+.image-container img.after {
   object-fit: contain;
   width: 100%;
   height: 100%;
 }
 
-.image-upload-container img.before {
+.image-container img.before {
   width: 50px;
 }
 
-.image-upload-container input {
+.image-container input {
   width: 100%;
   height: 100%;
   opacity: 0;
@@ -171,10 +182,11 @@ a:active {
   }
 }
 @media screen and (max-width: 780px) {
-  .image-upload-container {
+  .image-container {
     width: auto;
   }
-  .encoding {
+  .encoding,
+  .decoding {
     display: block;
   }
   .message-container {
