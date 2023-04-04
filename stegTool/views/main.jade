@@ -1,0 +1,44 @@
+html(lang="en-US")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    link(rel="stylesheet", href="https://fonts.googleapis.com/css?family=Roboto")
+    link(rel="stylesheet", href="/stylesheets/main.css")
+  
+    script(src="main.js" defer)
+    
+    
+
+    title Online Steganography Tool
+  body
+    main.container
+      nav.menu
+        img(src="images/STlogo.png")
+        h1 Steganography Tool
+      ul(class="buttons")
+          li 
+              button(class="button" id="changeToEncode") Encode Image
+          li 
+              button(class="button" id="changeToDecode") Decode Image
+      h2 Encode
+      article.encoding
+        section.image-upload-container(ondrop="dropImage(event)" ondragover="dragImageOver(event)")
+            img(class="image before" max-width="200px" src="images/UploadIcon.svg")
+            input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jpeg|image/*")
+        section.message-container#encodeStuff
+            .message-input
+                label(for="messageInput") Input message 
+                textarea#messageInput(name='messageInput' rows='4' cols='50')
+                span#wordCount 0
+                |  Characters
+
+            //Encode Select
+            .encode-input
+                label(for="encodingMethod") Select Encoding Method 
+                select#encodingMethod(name="encodingMethod" style="background-color: #0e1013; color: white")
+                    option(value="Option1" style="background-color: #0e1013; color: white") LSB 
+                    option(value="Option2" style="background-color: #0e1013; color: white") File Padding
+            button(class="button" onclick="encodeStart()") Encode Image
+        section.message-container#decodeStuff(style='display: none')
+          p this is a test
+            
