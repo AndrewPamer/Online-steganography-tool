@@ -5,9 +5,4 @@ var router = express.Router();
 router.get("/", function (req, res, next) {
   res.render("encode", { title: "Online Steganography Tool" });
 });
-
-router.get("/decode", function (req, res, next) {
-  res.render("decode", { title: "Online Steganography Tool" });
-});
-
 module.exports = router;
