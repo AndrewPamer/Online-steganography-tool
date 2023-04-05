@@ -1,14 +1,13 @@
-article.decoding(id="inactive")
-    section.image-container(ondrop="dropImage(event)" ondragover="dragImageOver(event)")
-        img(class="image before" max-width="200px" src="images/UploadIcon.svg")
-        input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jpeg|image/*")
-    section.message-container
-        .message-input
-            label(for="messageInput") Decoded Message 
-            textarea#messageInput(readonly name='messageInput' rows='4' cols='50')
-            span#wordCount 0
-            |  Characters
+div(id="inactive")
+    article.decoding
+        section.image-container(ondrop="dropImage(event)" ondragover="dragImageOver(event)")
+            img(class="image before" max-width="200px" src="images/UploadIcon.svg")
+            input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jpeg|image/*")
+        section.message-container
+            .message-input
+                label(for="messageInput") Decoded Message 
+                textarea#messageInput(readonly name='messageInput' rows='4' cols='50')
+                span#wordCount 0
+                |  Characters
 
-        button(class="button") Decode Image
-//TEST
-//- canvas(width="500px" height="500px" style="border:1px dotted white")
+            button(class="button") Decode Image

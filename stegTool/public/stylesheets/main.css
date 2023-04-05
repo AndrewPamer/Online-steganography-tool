@@ -78,7 +78,6 @@ a:active {
   display: flex;
   justify-content: center;
   border-bottom: 5px solid #059142;
-  margin-bottom: 25px;
 }
 
 .button {
@@ -104,16 +103,14 @@ a:active {
 
 .li {
   color: white;
-  /* display: inline; */
   background-color: #059142;
   margin: 0px;
-  /* padding:15px; */
   border-right: 1px solid black;
 }
 
 #active {
-  /* display: */
   visibility: visible;
+
 }
 
 #inactive {
@@ -137,6 +134,9 @@ a:active {
 .decoding {
   display: flex;
   justify-content: space-between;
+  border-bottom: 5px solid #059142;
+  padding-top: 25px;
+  padding-bottom: 25px;
 }
 
 .message-container {
@@ -172,6 +172,23 @@ a:active {
 
 #wordcount {
   display: block;
+}
+
+.encoded-container {
+  padding-top:25px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.encoded-container > * {
+  margin:15px;
+}
+
+.encodedImage {
+  width:50%;
+  /* height:auto; */
 }
 
 /**********RESPONSIVENESS**********/
