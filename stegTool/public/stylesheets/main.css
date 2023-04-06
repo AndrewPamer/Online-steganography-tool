@@ -78,7 +78,6 @@ a:active {
   display: flex;
   justify-content: center;
   border-bottom: 5px solid #059142;
-  margin-bottom: 25px;
 }
 
 .button {
@@ -104,16 +103,24 @@ a:active {
 
 .li {
   color: white;
-  /* display: inline; */
   background-color: #059142;
   margin: 0px;
-  /* padding:15px; */
   border-right: 1px solid black;
+}
+
+#active {
+  visibility: visible;
+
+}
+
+#inactive {
+  display: none;
+  visibility: hidden;
 }
 
 /**********IMAGE UPLOAD**********/
 
-.image-upload-container {
+.image-container {
   width: 50%;
   height: 500px;
   border: 1px dotted white;
@@ -123,9 +130,13 @@ a:active {
   position: relative;
 }
 
-.encoding {
+.encoding,
+.decoding {
   display: flex;
   justify-content: space-between;
+  border-bottom: 5px solid #059142;
+  padding-top: 25px;
+  padding-bottom: 25px;
 }
 
 .message-container {
@@ -142,17 +153,17 @@ a:active {
   display: block;
 }
 
-.image-upload-container img.after {
+.image-container img.after {
   object-fit: contain;
   width: 100%;
   height: 100%;
 }
 
-.image-upload-container img.before {
+.image-container img.before {
   width: 50px;
 }
 
-.image-upload-container input {
+.image-container input {
   width: 100%;
   height: 100%;
   opacity: 0;
@@ -163,6 +174,23 @@ a:active {
   display: block;
 }
 
+.encoded-container {
+  padding-top:25px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.encoded-container > * {
+  margin:15px;
+}
+
+.encodedImage {
+  width:50%;
+  /* height:auto; */
+}
+
 /**********RESPONSIVENESS**********/
 
 @media screen and (max-width: 1000px) {
@@ -171,10 +199,11 @@ a:active {
   }
 }
 @media screen and (max-width: 780px) {
-  .image-upload-container {
+  .image-container {
     width: auto;
   }
-  .encoding {
+  .encoding,
+  .decoding {
     display: block;
   }
   .message-container {

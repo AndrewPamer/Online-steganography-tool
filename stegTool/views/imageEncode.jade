@@ -1,21 +1,21 @@
+div(id="active")
+    article.encoding
+        section.image-container(ondrop="dropImage(event)" ondragover="dragImageOver(event)" width="200px")
+            img(class="image before" max-width="200px" src="images/UploadIcon.svg")
+            input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jfif, .jpeg|image/*")
+        section.message-container
+            .message-input
+                label(for="messageInput") Input message 
+                textarea#messageInput(placeholder="Input Message Here" name='messageInput' rows='4' cols='50')
+                span#wordCount 0
+                |  Characters
 
-
-article.encoding
-    section.image-upload-container(ondrop="dropImage(event)" ondragover="dragImageOver(event)")
-        img(class="image before" max-width="200px" src="images/UploadIcon.svg")
-        input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jpeg|image/*")
-    section.message-container
-        .message-input
-            label(for="messageInput") Input message 
-            textarea#messageInput(name='messageInput' rows='4' cols='50')
-            span#wordCount 0
-            |  Characters
-
-        //Encode Select
-        .encode-input
-            label(for="encodingMethod") Select Encoding Method 
-            select#encodingMethod(name="encodingMethod" style="background-color: #0e1013; color: white")
-                option(value="Option1" style="background-color: #0e1013; color: white") LSB 
-                option(value="Option2" style="background-color: #0e1013; color: white") File Padding
-        button(class="button") Encode Image
+            //Encode Select
+            .encode-input
+                label(for="encodingMethod") Select Encoding Method 
+                select#encodingMethod(name="encodingMethod" style="background-color: #0e1013; color: white")
+                    option(value="Option1" style="background-color: #0e1013; color: white") LSB 
+                    option(value="Option2" style="background-color: #0e1013; color: white") File Padding
+            button(class="button" onClick="encodeImage()") Encode Image
+    section.encoded-container
         
