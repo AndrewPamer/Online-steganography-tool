@@ -134,8 +134,22 @@ function downloadImage() {
 
 //Called when the user inputs and image from the 'Input Image' Button
 function imageInputFromButton() {
-  //Calls the function to show image
-  showImage(document.querySelector("#active #inputImage").files[0]);
+  var fileInput = document.querySelector('#active #inputImage');
+  var file = fileInput.files[0];
+    
+  // Check if the file is a JPG,JPEG, or JFIF
+  var fileName = file.name;
+  var fileExtension = fileName.split('.').pop().toLowerCase();
+    
+  if (fileExtension !== 'jpg' && fileExtension !== 'jpeg' &&fileExtension !== 'jfif') {
+    alert('Please select a JPG or JPEG image file.');
+    fileInput.value = '';
+    return;
+  }
+  else{
+    //If file is correct, show image 
+    showImage(document.querySelector("#active #inputImage").files[0]);
+  }
 }
 
 function dropImage(event) {

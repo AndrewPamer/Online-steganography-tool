@@ -2,7 +2,7 @@ div(id="active")
     article.encoding
         section.image-container(ondrop="dropImage(event)" ondragover="dragImageOver(event)" width="200px")
             img(class="image before" max-width="200px" src="images/UploadIcon.svg")
-            input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jpeg|image/*")
+            input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jfif, .jpeg|image/*")
         section.message-container
             .message-input
                 label(for="messageInput") Input message 
