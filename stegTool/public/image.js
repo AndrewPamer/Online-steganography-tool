@@ -156,8 +156,10 @@ function dropImage(event) {
   event.preventDefault();
   if (event.dataTransfer.items) {
     [...event.dataTransfer.items].forEach((item) => {
-      if (item.kind == "file" && item.type.match(/image/)) {
+      if (item.kind == "file" && (item.type === "image/jpeg" || item.type === "image/jpg")) {
         showImage(item.getAsFile());
+      } else {
+        alert('Please select a JPG or JPEG image file.');
       }
     });
   }

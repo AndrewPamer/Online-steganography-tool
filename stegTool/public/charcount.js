@@ -9,7 +9,6 @@ messageInput.addEventListener("keyup",function(){
 //limit set to the amount of characters you can put into the textbox
 const textarea = document.getElementById('messageInput');
 const maxChars = 30;
-
 textarea.addEventListener('input', function() {
   const currentChars = textarea.value.length;
   if (currentChars >= maxChars) {
