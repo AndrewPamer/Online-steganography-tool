@@ -8,10 +8,11 @@ messageInput.addEventListener("keyup",function(){
 });
 //limit set to the amount of characters you can put into the textbox
 const textarea = document.getElementById('messageInput');
-const maxChars = 31;
+const maxChars = 30;
+
 textarea.addEventListener('input', function() {
   const currentChars = textarea.value.length;
   if (currentChars >= maxChars) {
-    textarea.disabled = true;
+    textarea.value = textarea.value.substring(0, maxChars); // Truncate text to maxChars
   }
 });
