@@ -94,18 +94,17 @@ function encodeImage() {
     false
   );
 }
-
 function decodeImage() {
   const imageToDecode = document.querySelector("#active #inputImage").files[0];
   const decodeTextArea = document.querySelector("#active textarea");
   const decodeReader = new FileReader();
+
   if (imageToDecode) {
     decodeReader.readAsArrayBuffer(imageToDecode);
   }
 
   decodeReader.addEventListener("load", () => {
     const data = new Uint8Array(decodeReader.result);
-    //Get to the FF D8 at the end of a jpg header
     const lastIndex = data.lastIndexOf(217);
     if (lastIndex != -1) {
       const text = new TextDecoder().decode(data.subarray(lastIndex + 1));
@@ -113,12 +112,33 @@ function decodeImage() {
         alert("Could not find any encoded data!");
       }
       decodeTextArea.value = text;
+      const img = new Image();
+      img.addEventListener("load", () => {
+        // EXIF data outputted 
+        const metadata = "Filename: " + imageToDecode.name + "<br>" +
+                         "File size: " + imageToDecode.size + " bytes" + "<br>" +
+                         "File type: " + imageToDecode.type + "<br>" +
+                         "Last modified: " + new Date(imageToDecode.lastModified).toLocaleString() + "<br>" +
+                         "Width: " + img.width + " pixels" + "<br>" + 
+                         "Height: " + img.height + " pixels" + "<br>" + // 
+                         "Relative path: " + (imageToDecode.webkitRelativePath || "N/A") + "<br>" +
+                         "Full path: " + (imageToDecode.mozFullPath || "N/A");
+
+        // New element created 
+        const metadataParagraph = document.createElement('p');
+        metadataParagraph.innerHTML = metadata;
+        metadataParagraph.id = "metadataParagraph";
+        document.body.appendChild(metadataParagraph);
+      });
+      img.src = URL.createObjectURL(imageToDecode); 
     } else {
       alert("Error with decoding the image");
       return;
     }
   });
 }
+
+
 
 function downloadImage() {
   // const downloadButton = document.querySelector("#active #download")
