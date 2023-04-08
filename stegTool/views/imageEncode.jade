@@ -16,6 +16,6 @@ div(id="active")
                 select#encodingMethod(name="encodingMethod" style="background-color: #0e1013; color: white")
                     option(value="Option1" style="background-color: #0e1013; color: white") LSB 
                     option(value="Option2" style="background-color: #0e1013; color: white") File Padding
-            button(class="button" onClick="encodeImage()") Encode Image
+            button#encodeButton(class="button" onClick="encodeImage()" disabled) Encode Image
     section.encoded-container
         

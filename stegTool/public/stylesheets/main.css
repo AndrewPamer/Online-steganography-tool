@@ -190,13 +190,32 @@ a:active {
   width:50%;
   /* height:auto; */
 }
-#metadataParagraph {
-  font-size: 30px;
-  color: #059142;
-  text-align: center;
-  display: flex;
+
+#metadataTable {
+  margin-top: 20px;
+  border-collapse: collapse;
+  width: 100%;
+  text-align: center; /* Center align the table */
+  display: flex; 
   flex-direction: column;
   align-items: center;
+}
+
+#metadataTable th,
+#metadataTable td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  color: #059142; 
+}
+
+#metadataTable th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+#metadataTable tr:hover {
+  background-color: #f9f9f9;
 }
 
 /**********RESPONSIVENESS**********/

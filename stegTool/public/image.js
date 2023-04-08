@@ -41,8 +41,21 @@ function showImage(image) {
     false
   );
 }
+var messageInput = document.getElementById('messageInput');
+var encodeButton = document.getElementById('encodeButton');
+  
+  // Add an event listener to the textarea for input event
+  messageInput.addEventListener('input', function() {
+    // Enable the button if there is any text inside the textarea, otherwise disable it
+    if (messageInput.value.length > 0) {
+      encodeButton.removeAttribute('disabled');
+    } else {
+      encodeButton.setAttribute('disabled', 'true');
+    }
+  });
 
 function encodeImage() {
+  document.getElementById("encodeButton").disabled = true;
   const dataReader = new FileReader();
   if (publicImage) {
     dataReader.readAsArrayBuffer(publicImage);
@@ -114,31 +127,34 @@ function decodeImage() {
       decodeTextArea.value = text;
       const img = new Image();
       img.addEventListener("load", () => {
-        // EXIF data outputted 
-        const metadata = "Filename: " + imageToDecode.name + "<br>" +
-                         "File size: " + imageToDecode.size + " bytes" + "<br>" +
-                         "File type: " + imageToDecode.type + "<br>" +
-                         "Last modified: " + new Date(imageToDecode.lastModified).toLocaleString() + "<br>" +
-                         "Width: " + img.width + " pixels" + "<br>" + 
-                         "Height: " + img.height + " pixels" + "<br>" + // 
-                         "Relative path: " + (imageToDecode.webkitRelativePath || "N/A") + "<br>" +
-                         "Full path: " + (imageToDecode.mozFullPath || "N/A");
-
-        // New element created 
-        const metadataParagraph = document.createElement('p');
-        metadataParagraph.innerHTML = metadata;
-        metadataParagraph.id = "metadataParagraph";
-        document.body.appendChild(metadataParagraph);
+        // Table created
+        const table = document.createElement('table');
+        table.id = 'metadataTable';
+        document.body.appendChild(table);
+        //outputted metadata
+        const metadata = [
+          ["Filename", imageToDecode.name],
+          ["File size", imageToDecode.size + " bytes"],
+          ["File type", imageToDecode.type],
+          ["Last modified", new Date(imageToDecode.lastModified).toLocaleString()],
+          ["Width", img.width + " pixels"],
+          ["Height", img.height + " pixels"],
+        ];
+        for (const [key, value] of metadata) {
+          const row = table.insertRow();
+          const cell1 = row.insertCell(0);
+          const cell2 = row.insertCell(1);
+          cell1.textContent = key;
+          cell2.textContent = value;
+        }
       });
-      img.src = URL.createObjectURL(imageToDecode); 
+      img.src = URL.createObjectURL(imageToDecode);
     } else {
       alert("Error with decoding the image");
       return;
     }
   });
 }
-
-
 
 function downloadImage() {
   // const downloadButton = document.querySelector("#active #download")
