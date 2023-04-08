@@ -43,10 +43,9 @@ function showImage(image) {
 }
 var messageInput = document.getElementById('messageInput');
 var encodeButton = document.getElementById('encodeButton');
-  
-  // Add an event listener to the textarea for input event
+
   messageInput.addEventListener('input', function() {
-    // Enable the button if there is any text inside the textarea, otherwise disable it
+    // Enable the button if there is any text inside the textarea
     if (messageInput.value.length > 0) {
       encodeButton.removeAttribute('disabled');
     } else {
@@ -84,7 +83,7 @@ function encodeImage() {
       //Create a new image object and set the source to the image
       const encodeContainer = document.querySelector(".encoded-container");
       const encodeHeader = encodeContainer.appendChild(
-        document.createElement("h2")
+        document.createElement("h3")
       );
       encodeHeader.textContent = "Encoded Image";
 
@@ -108,6 +107,7 @@ function encodeImage() {
   );
 }
 function decodeImage() {
+  document.getElementById("decodeButton").disabled = true;
   const imageToDecode = document.querySelector("#active #inputImage").files[0];
   const decodeTextArea = document.querySelector("#active textarea");
   const decodeReader = new FileReader();
@@ -127,11 +127,16 @@ function decodeImage() {
       decodeTextArea.value = text;
       const img = new Image();
       img.addEventListener("load", () => {
+        const title = document.createElement('h1');
+        title.textContent = "Image Analysis"; 
+        title.style.textAlign = 'center';
+        document.body.appendChild(title);
         // Table created
         const table = document.createElement('table');
         table.id = 'metadataTable';
         document.body.appendChild(table);
-        //outputted metadata
+      
+        // Outputted metadata
         const metadata = [
           ["Filename", imageToDecode.name],
           ["File size", imageToDecode.size + " bytes"],
@@ -147,7 +152,7 @@ function decodeImage() {
           cell1.textContent = key;
           cell2.textContent = value;
         }
-      });
+      });      
       img.src = URL.createObjectURL(imageToDecode);
     } else {
       alert("Error with decoding the image");

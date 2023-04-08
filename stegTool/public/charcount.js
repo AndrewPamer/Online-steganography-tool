@@ -12,6 +12,6 @@ const maxChars = 30;
 textarea.addEventListener('input', function() {
   const currentChars = textarea.value.length;
   if (currentChars >= maxChars) {
-    textarea.value = textarea.value.substring(0, maxChars); // Truncate text to maxChars
+    textarea.value = textarea.value.substring(0, maxChars); 
   }
 });
