@@ -1,14 +1,23 @@
 div(id="active")
+    section.info 
+        h2 Encode
+        p To encode an image, select the image which you wish to encode. You can click the box below to upload an image from your device, or you can drag and drop an image into the box to upload it.
+        p Input the text you wish to encode into the image and select the encoding method. Your encoded image will be available to download after hitting the Encode button.
+        p 
+            em Note: For the LSB encoding method, the size of the text to encoded will be limited by the size of the uploaded image.
+
     article.encoding
-        section.image-container(ondrop="dropImage(event)" ondragover="dragImageOver(event)" width="200px")
-            img(class="image before" max-width="200px" src="images/UploadIcon.svg")
-            input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jfif, .jpeg|image/*")
+        section.image-container
+            h3 Input Image
+            section.image-area(ondrop="dropImage(event)" ondragover="dragImageOver(event)" width="200px")
+                img(class="image before" max-width="200px" src="images/UploadIcon.svg")
+                input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jfif, .jpeg|image/*")
         section.message-container
             .message-input
                 label(for="messageInput") Input message 
                 textarea#messageInput(placeholder="Input Message Here" name='messageInput' rows='4' cols='50')
                 span#wordCount 0
-                |  Characters
+                |  
 
             //Encode Select
             .encode-input

@@ -1,8 +1,14 @@
 div(id="inactive")
+    section.info 
+        h2 Decode
+        p To decode an image, select the image which you wish to decode. You can click the box below to upload an image from your device, or you can drag and drop an image into the box to upload it.
+        p Once you press the Decode button, any encoded text will be displayed along with the metadata and bitplanes of the image.
     article.decoding
-        section.image-container(ondrop="dropImage(event)" ondragover="dragImageOver(event)")
-            img(class="image before" max-width="200px" src="images/UploadIcon.svg")
-            input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jfif, .jpeg|image/*")
+        section.image-container 
+            h3 Input Image
+            section.image-area(ondrop="dropImage(event)" ondragover="dragImageOver(event)")
+                img(class="image before" max-width="200px" src="images/UploadIcon.svg")
+                input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jfif, .jpeg|image/*")
         section.message-container
             .message-input
                 label(for="messageInput") Decoded Message 

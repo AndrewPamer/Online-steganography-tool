@@ -23,9 +23,9 @@ html(lang="en-US")
         h1 Steganography Tool
       ul(class="buttons")
           li 
-              a(href = "javascript:void(0)" onclick="navPage('Encode')") Encode 
+              a(id="activeButton" href = "javascript:void(0)" onclick="navPage('Encode')") Encode 
           li 
-              a(href = "javascript:void(0)" onclick="navPage('Decode')") Decode
+              a(id="inactiveButton" href = "javascript:void(0)" onclick="navPage('Decode')") Decode
       include ./imageEncode
       include ./imageDecode
       
