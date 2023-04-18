@@ -1,4 +1,4 @@
-//These two variables hold the data for the two uploaded images
+//These two variables hold the files for the two uploaded images
 let encodeImageBlob = null;
 let decodeImageBlob = null;
 
@@ -27,31 +27,8 @@ function navPage(showPage) {
   }
 }
 
-//Previews the inputted image
-function showImage(image) {
-  //Where the image preview will show
-  const imagePreviewArea = document.querySelector("#active .image");
-  const reader = new FileReader();
-  if (image) {
-    //Read the image as a file
-    reader.readAsDataURL(image);
-  }
-
-  //Event listener for when the image loads
-  reader.addEventListener(
-    "load",
-    () => {
-      imagePreviewArea.classList.remove("before");
-      imagePreviewArea.classList.add("after");
-      imagePreviewArea.src = reader.result;
-    },
-    false
-  );
-}
-var messageInput = document.getElementById("messageInput");
-var encodeButton = document.getElementById("encodeButton");
-
-messageInput.addEventListener("input", function () {
+document.getElementById("messageInput").addEventListener("input",  () => {
+  var encodeButton = document.getElementById("encodeButton");
   // Enable the button if there is any text inside the textarea
   if (messageInput.value.length > 0) {
     encodeButton.removeAttribute("disabled");
@@ -60,62 +37,183 @@ messageInput.addEventListener("input", function () {
   }
 });
 
-function encodeImage() {
-  document.getElementById("encodeButton").disabled = true;
-  const dataReader = new FileReader();
-  if (encodeImageBlob) {
-    dataReader.readAsArrayBuffer(encodeImageBlob);
+async function showImage(image) {
+  try {
+    const imagePreviewArea = document.querySelector("#active .image");
+    const readImageURL = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        resolve(reader.result);
+      })
+      reader.addEventListener("error", (error) => {
+        reject(error);
+      })
+      reader.readAsDataURL(image);
+    })
+    imagePreviewArea.classList.remove("before");
+    imagePreviewArea.classList.add("after");
+    imagePreviewArea.src = readImageURL;
   }
+  catch(error) {
+    console.error(error);
+  }
+}
 
-  dataReader.addEventListener(
-    "load",
-    () => {
-      //Get the text input
-      const text = document.querySelector("#active textarea").value;
-      //Text encoder for the inputted text
-      const encoder = new TextEncoder();
-      //Encode the text into Uint8Array
-      const encodedText = encoder.encode(text);
 
-      //Combine the Uint8Arrays of the image and the text
-      var combinedBuffers = new Uint8Array([
-        ...new Uint8Array(dataReader.result),
-        ...encodedText,
-      ]);
-      //Create URL image from the buffer
-      const encodedImageURL = URL.createObjectURL(
-        new Blob([combinedBuffers], { type: "image/jpg" })
-      );
+//Reads a file and returns it as an array buffer
+function readAsArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      resolve(reader.result);
+    })
+    reader.addEventListener("error", (error) => {
+      reject(error);
+    })
+    reader.readAsArrayBuffer(file);
+  })
+}
 
-      //Create a new image object and set the source to the image
-      const encodeContainer = document.querySelector(".encoded-container");
-      const encodeHeader = encodeContainer.appendChild(
-        document.createElement("h2")
-      );
-      encodeHeader.textContent = "Encoded Image";
+async function encodeImage() {
+  try {
+    const encodeReader = await readAsArrayBuffer(encodeImageBlob);
 
-      const imgObj = encodeContainer.appendChild(document.createElement("img"));
-      imgObj.classList.add("encodedImage");
-      imgObj.src = encodedImageURL;
+    /** Encode Text **/
+    const text = document.querySelector("#active textarea").value;
+    const encodedText = new TextEncoder().encode(text);
+    
+    /** File Padding Encoding **/
+    var combinedBuffers = paddingEncode(encodeReader, encodedText);
 
-      const downloadButton = encodeContainer.appendChild(
-        document.createElement("button")
-      );
-      downloadButton.classList.add("button");
-      downloadButton.id = "download";
-      downloadButton.textContent = "Download";
-      downloadButton.setAttribute("onClick", "downloadImage()");
+    /** Create new image **/
+    const encodedImageURL = URL.createObjectURL(
+      new Blob([combinedBuffers], { type: "image/jpg" })
+    );
 
-      imgObj.addEventListener("load", () => {
-        imgObj.scrollIntoView({ behavior: "smooth", block: "end" });
-      });
-    },
-    false
-  );
+    /** Create / Update the encoded image **/
+    const imgObj = showEncodeImage(encodedImageURL)
+    imgObj.addEventListener("load", () => {
+      imgObj.scrollIntoView({ behavior: "smooth", block: "end" });
+    });
+  }
+  catch(error) {
+    console.error(error);
+  }
+}
+
+function paddingEncode(imgBuffer, txtBuffer) {
+  return new Uint8Array([
+    ...new Uint8Array(imgBuffer),
+    ...txtBuffer,
+  ]);
+}
+
+function LSB(imgBuffer, txtxBuffer) {
+  //TODO
+}
+
+function showEncodeImage(imgSrc) {
+  const encodeContainer = document.querySelector(".encoded-container");
+  let imgObj = encodeContainer.querySelector("img");
+  if(!imgObj) {
+    //Create the "Encoded Image" Text
+    encodeContainer.appendChild(
+      document.createElement("h2")
+    ).textContent = "Encoded Image";
+
+    //Create the image object
+    imgObj = encodeContainer.appendChild(document.createElement("img"));
+    imgObj.classList.add("encodedImage");
+
+    //Create the Download Button
+    const downloadButton = encodeContainer.appendChild(
+      document.createElement("button")
+    );
+    downloadButton.classList.add("button");
+    downloadButton.id = "download";
+    downloadButton.textContent = "Download";
+    downloadButton.setAttribute("onClick", "downloadImage()");
+  }
+  //Set the source of the image
+  imgObj.src = imgSrc;
+  return imgObj;
+}
+
+// function encodeImage() {
+//   // document.getElementById("encodeButton").disabled = true;
+//   const dataReader = new FileReader();
+//   if (encodeImageBlob) {
+//     dataReader.readAsArrayBuffer(encodeImageBlob);
+//   }
+
+//   dataReader.addEventListener(
+//     "load",
+//     () => {
+//       //Get the text input
+//       const text = document.querySelector("#active textarea").value;
+//       //Text encoder for the inputted text
+//       const encoder = new TextEncoder();
+//       //Encode the text into Uint8Array
+//       const encodedText = encoder.encode(text);
+//       console.log(text);
+
+//       //Combine the Uint8Arrays of the image and the text
+//       var combinedBuffers = new Uint8Array([
+//         ...new Uint8Array(dataReader.result),
+//         ...encodedText,
+//       ]);
+//       //Create URL image from the buffer
+//       const encodedImageURL = URL.createObjectURL(
+//         new Blob([combinedBuffers], { type: "image/jpg" })
+//       );
+
+//       //Get the container for the encoded image
+//       const encodeContainer = document.querySelector(".encoded-container");
+
+//       //variable for the img elment
+//       var imgObj;
+//       //Check if the element has been created yet
+//       if(encodeContainer.querySelector("h2")) {
+//         encodeContainer.querySelector("img").src = encodedImageURL;
+//         imgObj = encodeContainer.querySelector("img");
+//       }
+//       else {
+//         const encodeHeader = encodeContainer.appendChild(
+//           document.createElement("h2")
+//         );
+//         encodeHeader.textContent = "Encoded Image";
+
+//         imgObj = encodeContainer.appendChild(document.createElement("img"));
+//         imgObj.classList.add("encodedImage");
+//         imgObj.src = encodedImageURL;
+
+//         const downloadButton = encodeContainer.appendChild(
+//           document.createElement("button")
+//         );
+//         downloadButton.classList.add("button");
+//         downloadButton.id = "download";
+//         downloadButton.textContent = "Download";
+//         downloadButton.setAttribute("onClick", "downloadImage()");
+//       }
+
+//       imgObj.addEventListener("load", () => {
+//         imgObj.scrollIntoView({ behavior: "smooth", block: "end" });
+//       });
+//     },
+//     false
+//   );
+// }
+
+
+async function decodeImage() {
+  const decodeReader = await readAsArrayBuffer(decodeImageBlob);
 }
 function decodeImage() {
   // document.getElementById("decodeButton").disabled = true;
-  const imageToDecode = document.querySelector("#active #inputImage").files[0];
+  // const imageToDecode = document.querySelector("#active #inputImage").files[0];
+  const imageToDecode = decodeImageBlob;
+  console.log(imageToDecode);
+  // const imageToDecode = new File([decodeImageBlob], "t.jpg", {type: "image/jpg"});
   const decodeTextArea = document.querySelector("#active textarea");
   const decodeReader = new FileReader();
 
@@ -124,6 +222,7 @@ function decodeImage() {
   }
 
   decodeReader.addEventListener("load", () => {
+    console.log(decodeReader);
     const data = new Uint8Array(decodeReader.result);
     const lastIndex = data.lastIndexOf(217);
     if (lastIndex != -1) {
@@ -134,36 +233,58 @@ function decodeImage() {
       decodeTextArea.value = text;
       const img = new Image();
       img.addEventListener("load", () => {
-        const title = document.createElement("h1");
-        title.textContent = "Image Analysis";
-        title.style.textAlign = "center";
-        document.body.appendChild(title);
-        // Table created
-        const table = document.createElement("table");
-        table.id = "metadataTable";
-        document.body.appendChild(table);
+        const decodedContainer = document.querySelector(".decoded-container");
+        //Check if the table is already created
+        var metadata;
+        if(decodedContainer.querySelector("h1")) {
+          metadata = [
+            ["Filename", imageToDecode.name],
+            ["File size", imageToDecode.size + " bytes"],
+            ["File type", imageToDecode.type],
+            [
+              "Last modified",
+              new Date(imageToDecode.lastModified).toLocaleString(),
+            ],
+            ["Width", img.width + " pixels"],
+            ["Height", img.height + " pixels"],
+          ];
+          const table = decodedContainer.querySelector("table");
+          for(var i = 0; i < table.rows.length; i++) {
+            table.rows[i].querySelectorAll("td")[1].textContent = metadata[i][1];
+          }
+          
+        }
+        else {
+          const title = document.createElement("h1");
+          title.textContent = "Image Analysis";
+          title.style.textAlign = "center";
+          decodedContainer.appendChild(title);
+          // Table created
+          const table = document.createElement("table");
+          table.id = "metadataTable";
+          decodedContainer.appendChild(table);
+          metadata = [
+            ["Filename", imageToDecode.name],
+            ["File size", imageToDecode.size + " bytes"],
+            ["File type", imageToDecode.type],
+            [
+              "Last modified",
+              new Date(imageToDecode.lastModified).toLocaleString(),
+            ],
+            ["Width", img.width + " pixels"],
+            ["Height", img.height + " pixels"],
+          ];
 
-        // Outputted metadata
-        const metadata = [
-          ["Filename", imageToDecode.name],
-          ["File size", imageToDecode.size + " bytes"],
-          ["File type", imageToDecode.type],
-          [
-            "Last modified",
-            new Date(imageToDecode.lastModified).toLocaleString(),
-          ],
-          ["Width", img.width + " pixels"],
-          ["Height", img.height + " pixels"],
-        ];
-        for (const [key, value] of metadata) {
-          const row = table.insertRow();
-          const cell1 = row.insertCell(0);
-          const cell2 = row.insertCell(1);
-          cell1.textContent = key;
-          cell2.textContent = value;
+          for (const [key, value] of metadata) {
+            const row = table.insertRow();
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            cell1.textContent = key;
+            cell2.textContent = value;
+          }
         }
       });
-      img.src = URL.createObjectURL(imageToDecode);
+      img.src = URL.createObjectURL(decodeImageBlob);
     } else {
       alert("Error with decoding the image");
       return;
@@ -203,10 +324,10 @@ function imageInputFromButton() {
   } else {
     //If file is correct, show image
     if (document.querySelector("#active article").className === "encoding") {
-      encodeImageBlob = new Blob([file], { type: file.type });
+      encodeImageBlob = file;
       showImage(encodeImageBlob);
     } else {
-      decodeImageBlob = new Blob([file], { type: file.type });
+      decodeImageBlob = file;
       showImage(decodeImageBlob);
     }
   }
@@ -223,14 +344,10 @@ function dropImage(event) {
         if (
           document.querySelector("#active article").className === "encoding"
         ) {
-          encodeImageBlob = new Blob([item.getAsFile()], {
-            type: item.getAsFile().type,
-          });
+          encodeImageBlob = item.getAsFile();
           showImage(encodeImageBlob);
         } else {
-          decodeImageBlob = new Blob([item.getAsFile()], {
-            type: item.getAsFile().type,
-          });
+          decodeImageBlob = item.getAsFile();
           showImage(decodeImageBlob);
         }
       } else {
