@@ -28,7 +28,7 @@ function navPage(showPage) {
 }
 
 document.getElementById("messageInput").addEventListener("input",  () => {
-  var encodeButton = document.getElementById("encodeButton");
+  let encodeButton = document.getElementById("encodeButton");
   // Enable the button if there is any text inside the textarea
   if (messageInput.value.length > 0) {
     encodeButton.removeAttribute("disabled");
@@ -39,7 +39,10 @@ document.getElementById("messageInput").addEventListener("input",  () => {
 
 async function showImage(image) {
   try {
+    //Get the img element
     const imagePreviewArea = document.querySelector("#active .image");
+
+    //Read the image as a data url
     const readImageURL = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.addEventListener("load", () => {
@@ -50,8 +53,12 @@ async function showImage(image) {
       })
       reader.readAsDataURL(image);
     })
+    
+    //Set the class of the image to be after
     imagePreviewArea.classList.remove("before");
     imagePreviewArea.classList.add("after");
+
+    //Set the source of the image
     imagePreviewArea.src = readImageURL;
   }
   catch(error) {
@@ -206,7 +213,33 @@ function showEncodeImage(imgSrc) {
 
 
 async function decodeImage() {
-  const decodeReader = await readAsArrayBuffer(decodeImageBlob);
+  try {
+    //Read the image to decode as an array buffer
+    const decodeReader = await readAsArrayBuffer(decodeImageBlob);
+
+    //Get the area to show the decoded text
+    const decodeTextArea = document.querySelector("#active textarea");
+
+    //Check which decoded method we need to do: LSB or file 
+    let decodedText;
+    if(/*File padding */) {
+      //Call file padding decode function
+      decodedText = paddingDecode(decodeReader);
+    }
+    else {
+      //call LSB decode function
+      //This function will also check if there isn't any decoded text
+      decodedText = LSBdecode(decodeReader);
+    }
+    //set the decodeTextArea to the decoded text returned by a function if there is any
+
+
+    //Call the function to show the image analysis
+    imageAnalysis();
+  }
+  catch(error) {
+    console.error(error);
+  }
 }
 function decodeImage() {
   // document.getElementById("decodeButton").disabled = true;
