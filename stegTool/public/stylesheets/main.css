@@ -85,9 +85,64 @@ a:active {
   align-items: center;
 }
 
-.menu img {
+.menu img:not(.info-image) {
   height: 123px;
 }
+.info-container {
+  cursor: pointer;
+  display: flex; /* Use flexbox layout to align items */
+  align-items: center; /* Vertically align items */
+}
+
+.info-image {
+  
+  width: 30px; 
+  height: 30px; 
+  margin-left: 30%; 
+}
+
+.info-text {
+  font-size: 12px; 
+  margin-left: 5px; 
+}
+.popup p {
+  color:black;
+}
+.popup {
+  position: absolute;
+  padding: 20px;
+  width:300px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  color: #333;
+  border-radius: 20px;
+}
+
+.popup.instruction-1 {
+  top: 30px;
+  left: 344px;
+}
+
+.popup.instruction-2 {
+  top: 1px;
+  left: 999px;
+}
+
+.popup.instruction-3 {
+  bottom: 344px;
+  right: 115px;
+}
+
+.next-button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 
 .buttons {
   display: flex;
@@ -117,7 +172,7 @@ a:active {
 }
 
 .buttons #activeButton {
-  background-color: #3efc90;
+  background-color: #70d59c;
 }
 
 .li {

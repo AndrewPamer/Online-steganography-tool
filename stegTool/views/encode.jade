@@ -8,6 +8,7 @@ html(lang="en-US")
     
     script(src="charcount.js" defer)
     script(src="image.js" defer)
+    script(src="instructions.js" defer)
 
     link(rel='apple-touch-icon' sizes='180x180' href='images/favicon/apple-touch-icon.png')
     link(rel='icon' type='image/png' sizes='32x32' href='images/favicon/favicon-32x32.png')
@@ -21,11 +22,15 @@ html(lang="en-US")
       nav.menu
         img(src="images/STlogo.png")
         h1 Steganography Tool
+        .info-container
+          img.info-image(src='images/info.png' alt='Info')
+          p.info-text Click for instruction
+
       ul(class="buttons")
           li 
               a(id="activeButton" href = "javascript:void(0)" onclick="navPage('Encode')") Encode 
           li 
-              a(id="inactiveButton" href = "javascript:void(0)" onclick="navPage('Decode')") Decode
+              a(id="inactiveButton" href = "javascript:void(0)" onclick="navPage('Decode')") Decode       
       include ./imageEncode
       include ./imageDecode
       
