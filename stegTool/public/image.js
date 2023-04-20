@@ -27,7 +27,7 @@ function navPage(showPage) {
   }
 }
 
-document.getElementById("messageInput").addEventListener("input",  () => {
+document.getElementById("messageInput").addEventListener("input", () => {
   let encodeButton = document.getElementById("encodeButton");
   // Enable the button if there is any text inside the textarea
   if (messageInput.value.length > 0) {
@@ -47,25 +47,23 @@ async function showImage(image) {
       const reader = new FileReader();
       reader.addEventListener("load", () => {
         resolve(reader.result);
-      })
+      });
       reader.addEventListener("error", (error) => {
         reject(error);
-      })
+      });
       reader.readAsDataURL(image);
-    })
-    
+    });
+
     //Set the class of the image to be after
     imagePreviewArea.classList.remove("before");
     imagePreviewArea.classList.add("after");
 
     //Set the source of the image
     imagePreviewArea.src = readImageURL;
-  }
-  catch(error) {
-    console.error(error);
+  } catch (error) {
+    console.log(error, " : While Showing The Image");
   }
 }
-
 
 //Reads a file and returns it as an array buffer
 function readAsArrayBuffer(file) {
@@ -73,13 +71,15 @@ function readAsArrayBuffer(file) {
     const reader = new FileReader();
     reader.addEventListener("load", () => {
       resolve(reader.result);
-    })
+    });
     reader.addEventListener("error", (error) => {
       reject(error);
-    })
+    });
     reader.readAsArrayBuffer(file);
-  })
+  });
 }
+
+/********** ENCODING **********/
 
 async function encodeImage() {
   try {
@@ -88,7 +88,7 @@ async function encodeImage() {
     /** Encode Text **/
     const text = document.querySelector("#active textarea").value;
     const encodedText = new TextEncoder().encode(text);
-    
+
     /** File Padding Encoding **/
     var combinedBuffers = paddingEncode(encodeReader, encodedText);
 
@@ -98,21 +98,17 @@ async function encodeImage() {
     );
 
     /** Create / Update the encoded image **/
-    const imgObj = showEncodeImage(encodedImageURL)
+    const imgObj = showEncodeImage(encodedImageURL);
     imgObj.addEventListener("load", () => {
       imgObj.scrollIntoView({ behavior: "smooth", block: "end" });
     });
-  }
-  catch(error) {
-    console.error(error);
+  } catch (error) {
+    console.log(error, " : While Encoding The Image");
   }
 }
 
 function paddingEncode(imgBuffer, txtBuffer) {
-  return new Uint8Array([
-    ...new Uint8Array(imgBuffer),
-    ...txtBuffer,
-  ]);
+  return new Uint8Array([...new Uint8Array(imgBuffer), ...txtBuffer]);
 }
 
 function LSB(imgBuffer, txtxBuffer) {
@@ -122,11 +118,10 @@ function LSB(imgBuffer, txtxBuffer) {
 function showEncodeImage(imgSrc) {
   const encodeContainer = document.querySelector(".encoded-container");
   let imgObj = encodeContainer.querySelector("img");
-  if(!imgObj) {
+  if (!imgObj) {
     //Create the "Encoded Image" Text
-    encodeContainer.appendChild(
-      document.createElement("h2")
-    ).textContent = "Encoded Image";
+    encodeContainer.appendChild(document.createElement("h2")).textContent =
+      "Encoded Image";
 
     //Create the image object
     imgObj = encodeContainer.appendChild(document.createElement("img"));
@@ -146,183 +141,115 @@ function showEncodeImage(imgSrc) {
   return imgObj;
 }
 
-// function encodeImage() {
-//   // document.getElementById("encodeButton").disabled = true;
-//   const dataReader = new FileReader();
-//   if (encodeImageBlob) {
-//     dataReader.readAsArrayBuffer(encodeImageBlob);
-//   }
-
-//   dataReader.addEventListener(
-//     "load",
-//     () => {
-//       //Get the text input
-//       const text = document.querySelector("#active textarea").value;
-//       //Text encoder for the inputted text
-//       const encoder = new TextEncoder();
-//       //Encode the text into Uint8Array
-//       const encodedText = encoder.encode(text);
-//       console.log(text);
-
-//       //Combine the Uint8Arrays of the image and the text
-//       var combinedBuffers = new Uint8Array([
-//         ...new Uint8Array(dataReader.result),
-//         ...encodedText,
-//       ]);
-//       //Create URL image from the buffer
-//       const encodedImageURL = URL.createObjectURL(
-//         new Blob([combinedBuffers], { type: "image/jpg" })
-//       );
-
-//       //Get the container for the encoded image
-//       const encodeContainer = document.querySelector(".encoded-container");
-
-//       //variable for the img elment
-//       var imgObj;
-//       //Check if the element has been created yet
-//       if(encodeContainer.querySelector("h2")) {
-//         encodeContainer.querySelector("img").src = encodedImageURL;
-//         imgObj = encodeContainer.querySelector("img");
-//       }
-//       else {
-//         const encodeHeader = encodeContainer.appendChild(
-//           document.createElement("h2")
-//         );
-//         encodeHeader.textContent = "Encoded Image";
-
-//         imgObj = encodeContainer.appendChild(document.createElement("img"));
-//         imgObj.classList.add("encodedImage");
-//         imgObj.src = encodedImageURL;
-
-//         const downloadButton = encodeContainer.appendChild(
-//           document.createElement("button")
-//         );
-//         downloadButton.classList.add("button");
-//         downloadButton.id = "download";
-//         downloadButton.textContent = "Download";
-//         downloadButton.setAttribute("onClick", "downloadImage()");
-//       }
-
-//       imgObj.addEventListener("load", () => {
-//         imgObj.scrollIntoView({ behavior: "smooth", block: "end" });
-//       });
-//     },
-//     false
-//   );
-// }
-
+/********** DECODING **********/
 
 async function decodeImage() {
   try {
     //Read the image to decode as an array buffer
     const decodeReader = await readAsArrayBuffer(decodeImageBlob);
 
+    //Read the image as a UInt8Array
+    const decodeImageData = new Uint8Array(decodeReader);
+
     //Get the area to show the decoded text
     const decodeTextArea = document.querySelector("#active textarea");
 
-    //Check which decoded method we need to do: LSB or file 
+    //Check which decoded method we need to do: LSB or file padding
     let decodedText;
-    if(/*File padding */) {
+    if (decodeImageData[decodeImageData.length - 1] !== 217) {
       //Call file padding decode function
-      decodedText = paddingDecode(decodeReader);
-    }
-    else {
+      decodedText = paddingDecode(decodeImageData);
+    } else {
       //call LSB decode function
       //This function will also check if there isn't any decoded text
-      decodedText = LSBdecode(decodeReader);
+      decodedText = LSBdecode(decodeImageData);
     }
-    //set the decodeTextArea to the decoded text returned by a function if there is any
 
+    //show the decoded text if there is any
+    if (decodedText) {
+      decodeTextArea.value = decodedText;
+    } else {
+      //Tell the user if no encoded data is found
+      alert("Could not find any encoded data!");
+    }
 
     //Call the function to show the image analysis
-    imageAnalysis();
-  }
-  catch(error) {
-    console.error(error);
+    imageAnalysis(decodeImageBlob);
+  } catch (error) {
+    console.log(error, " : While Decoding The Image");
   }
 }
-function decodeImage() {
-  // document.getElementById("decodeButton").disabled = true;
-  // const imageToDecode = document.querySelector("#active #inputImage").files[0];
-  const imageToDecode = decodeImageBlob;
-  console.log(imageToDecode);
-  // const imageToDecode = new File([decodeImageBlob], "t.jpg", {type: "image/jpg"});
-  const decodeTextArea = document.querySelector("#active textarea");
-  const decodeReader = new FileReader();
 
-  if (decodeImageBlob) {
-    decodeReader.readAsArrayBuffer(decodeImageBlob);
-  }
+function paddingDecode(decodeImageData) {
+  const startOfText = decodeImageData.lastIndexOf(217);
+  const decodedText = new TextDecoder().decode(
+    decodeImageData.subarray(startOfText + 1)
+  );
+  return decodedText;
+}
 
-  decodeReader.addEventListener("load", () => {
-    console.log(decodeReader);
-    const data = new Uint8Array(decodeReader.result);
-    const lastIndex = data.lastIndexOf(217);
-    if (lastIndex != -1) {
-      const text = new TextDecoder().decode(data.subarray(lastIndex + 1));
-      if (text === "") {
-        alert("Could not find any encoded data!");
-      }
-      decodeTextArea.value = text;
+function LSBdecode(decodeImageData) {}
+
+/********** ANALYSIS **********/
+
+async function imageAnalysis(imageData) {
+  try {
+    //Create a new Image from the data
+    const imgShow = await new Promise((resolve, reject) => {
       const img = new Image();
       img.addEventListener("load", () => {
-        const decodedContainer = document.querySelector(".decoded-container");
-        //Check if the table is already created
-        var metadata;
-        if(decodedContainer.querySelector("h1")) {
-          metadata = [
-            ["Filename", imageToDecode.name],
-            ["File size", imageToDecode.size + " bytes"],
-            ["File type", imageToDecode.type],
-            [
-              "Last modified",
-              new Date(imageToDecode.lastModified).toLocaleString(),
-            ],
-            ["Width", img.width + " pixels"],
-            ["Height", img.height + " pixels"],
-          ];
-          const table = decodedContainer.querySelector("table");
-          for(var i = 0; i < table.rows.length; i++) {
-            table.rows[i].querySelectorAll("td")[1].textContent = metadata[i][1];
-          }
-          
-        }
-        else {
-          const title = document.createElement("h1");
-          title.textContent = "Image Analysis";
-          title.style.textAlign = "center";
-          decodedContainer.appendChild(title);
-          // Table created
-          const table = document.createElement("table");
-          table.id = "metadataTable";
-          decodedContainer.appendChild(table);
-          metadata = [
-            ["Filename", imageToDecode.name],
-            ["File size", imageToDecode.size + " bytes"],
-            ["File type", imageToDecode.type],
-            [
-              "Last modified",
-              new Date(imageToDecode.lastModified).toLocaleString(),
-            ],
-            ["Width", img.width + " pixels"],
-            ["Height", img.height + " pixels"],
-          ];
-
-          for (const [key, value] of metadata) {
-            const row = table.insertRow();
-            const cell1 = row.insertCell(0);
-            const cell2 = row.insertCell(1);
-            cell1.textContent = key;
-            cell2.textContent = value;
-          }
-        }
+        resolve(img);
+      });
+      img.addEventListener("error", (error) => {
+        reject(error);
       });
       img.src = URL.createObjectURL(decodeImageBlob);
+    });
+
+    //Get the metadata
+    const metadata = [
+      ["Filename", imageData.name],
+      ["File size", imageData.size + " bytes"],
+      ["File type", imageData.type],
+      ["Last modified", new Date(imageData.lastModified).toLocaleString()],
+      ["Width", imgShow.width + " pixels"],
+      ["Height", imgShow.height + " pixels"],
+    ];
+
+    //Get the container to show the meta data
+    const decodedContainer = document.querySelector(".decoded-container");
+
+    //Add the elements if they are not there
+    if (!decodedContainer.children.length) {
+      //Create the header
+      decodedContainer.appendChild(document.createElement("h2")).textContent =
+        "Image Analysis";
+
+      //Create the table
+      const table = decodedContainer.appendChild(
+        document.createElement("table")
+      );
+      table.id = "metadataTable";
+
+      //Add data to the table
+      for (const [key, value] of metadata) {
+        const row = table.insertRow();
+        row.insertCell(0).textContent = key;
+        row.insertCell(1).textContent = value;
+      }
     } else {
-      alert("Error with decoding the image");
-      return;
+      //The table already exists so we update it.
+      const table = decodedContainer.querySelector("table");
+      for (var i = 0; i < table.rows.length; i++) {
+        table.rows[i].querySelectorAll("td")[1].textContent = metadata[i][1];
+      }
     }
-  });
+    decodedContainer
+      .querySelector("table")
+      .scrollIntoView({ behavior: "smooth", block: "end" });
+  } catch (error) {
+    console.log(error, " : At Image Analysis");
+  }
 }
 
 function downloadImage() {
@@ -343,25 +270,27 @@ function imageInputFromButton() {
   var file = fileInput.files[0];
 
   // Check if the file is a JPG,JPEG, or JFIF
-  var fileName = file.name;
-  var fileExtension = fileName.split(".").pop().toLowerCase();
+  if (file) {
+    var fileName = file.name;
+    var fileExtension = fileName.split(".").pop().toLowerCase();
 
-  if (
-    fileExtension !== "jpg" &&
-    fileExtension !== "jpeg" &&
-    fileExtension !== "jfif"
-  ) {
-    alert("Please select a JPG or JPEG image file.");
-    fileInput.value = "";
-    return;
-  } else {
-    //If file is correct, show image
-    if (document.querySelector("#active article").className === "encoding") {
-      encodeImageBlob = file;
-      showImage(encodeImageBlob);
+    if (
+      fileExtension !== "jpg" &&
+      fileExtension !== "jpeg" &&
+      fileExtension !== "jfif"
+    ) {
+      alert("Please select a JPG or JPEG image file.");
+      fileInput.value = "";
+      return;
     } else {
-      decodeImageBlob = file;
-      showImage(decodeImageBlob);
+      //If file is correct, show image
+      if (document.querySelector("#active article").className === "encoding") {
+        encodeImageBlob = file;
+        showImage(encodeImageBlob);
+      } else {
+        decodeImageBlob = file;
+        showImage(decodeImageBlob);
+      }
     }
   }
 }
