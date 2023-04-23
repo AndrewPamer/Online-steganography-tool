@@ -133,7 +133,18 @@ a:active {
   bottom: 344px;
   right: 115px;
 }
-
+.popup.instruction-4{
+  bottom:115px;
+  right: 115px; 
+}
+.popup.dinstruction-1{
+  top: 30px;
+  left: 344px;
+}
+.popup.dinstruction-2{
+  bottom:115px;
+  right: 115px;
+}
 .next-button {
   padding: 5px 10px;
   background-color: #007bff;
