@@ -253,13 +253,11 @@ async function imageAnalysis(imageData) {
 }
 
 function downloadImage() {
-  const downloadLink = document.createElement("a");
-  downloadLink.href = document.querySelector(
-    "#active .encoded-container img"
-  ).src;
-  downloadLink.download = "encodedImage.jpg";
-  downloadLink.click();
-  console.log(downloadLink);
+  const encodedImage = document.querySelector(".encodedImage");
+  const link = document.createElement("a");
+  link.download = "encodedImage.jpg";
+  link.href = encodedImage.src;
+  link.click();
 }
 
 /********** INPUT **********/
