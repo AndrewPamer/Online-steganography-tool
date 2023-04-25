@@ -89,13 +89,16 @@ async function encodeImage() {
     const text = document.querySelector("#active textarea").value;
     const encodedText = new TextEncoder().encode(text);
 
-    /** File Padding Encoding **/
-    var combinedBuffers = paddingEncode(encodeReader, encodedText);
-
-    /** Create new image **/
-    const encodedImageURL = URL.createObjectURL(
-      new Blob([combinedBuffers], { type: "image/jpg" })
-    );
+    const methodSelection = document.querySelector("#active #encodingMethod").value;
+    var encodedImageURL;
+    if(methodSelection == 1) {
+      encodedImageURL = await LSBEncode(encodeReader, encodedText);
+    }
+    else {
+      encodedImageURL = paddingEncode(encodeReader, encodedText);
+    
+    }
+    console.log(encodedImageURL);
 
     /** Create / Update the encoded image **/
     const imgObj = showEncodeImage(encodedImageURL);
@@ -108,11 +111,64 @@ async function encodeImage() {
 }
 
 function paddingEncode(imgBuffer, txtBuffer) {
-  return new Uint8Array([...new Uint8Array(imgBuffer), ...txtBuffer]);
+  var combinedBuffers =  new Uint8Array([...new Uint8Array(imgBuffer), ...txtBuffer]);
+  return URL.createObjectURL( new Blob([combinedBuffers], {type: "image/jpg"}));
 }
 
-function LSB(imgBuffer, txtxBuffer) {
-  //TODO
+function imagetest(imageSource, canvas) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.addEventListener("load", () => {
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+  
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = new Uint8Array(imageData.data);
+      
+      resolve(data);
+
+    })
+    img.addEventListener("error", () => {
+      reject(error);
+    })
+    img.src = URL.createObjectURL( new Blob([imageSource], {type: "image/jpg"}));
+  })
+}
+
+async function LSBEncode(imgBuffer, txtBuffer) {
+  try{
+    const canvas = document.createElement("canvas");
+  imgBuffer = new Uint8Array(imgBuffer);
+  const data = await imagetest(imgBuffer, canvas);
+
+    binaryBuffer = ""
+    for(let i = 0; i < txtBuffer.length; i++) {
+      binaryBuffer += txtBuffer[i].toString(2).padStart(8, '0');
+    }
+    //Before we encode the message itself, we first need to encode the length of the message so we know how long it is when we decode.
+    const textsizeBinary = txtBuffer.length.toString(2).padStart(8, '0');
+    // console.log(textsizeBinary);
+
+    for(let i = 0; i < textsizeBinary.length; i++) {
+      data[i] = (data[i] & 0xFE) | parseInt(textsizeBinary[i]);
+      // console.log(data[i]);
+    }
+
+    for(let i = textsizeBinary.length; i < binaryBuffer.length; i++) {
+      data[i] = (data[i] & 0xFE) | parseInt(binaryBuffer[i]);
+      // console.log(data[i]);
+    }
+    var LSBEncodedImage = URL.createObjectURL( new Blob([data], {type: "image/jpg"}));
+    LSBEncodedImage = canvas.toDataURL("image/jpeg")
+  return LSBEncodedImage;
+  }
+  catch(error) {
+    console.error(error, " : At LSB encode");
+  }
 }
 
 function showEncodeImage(imgSrc) {
