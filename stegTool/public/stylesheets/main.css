@@ -307,6 +307,26 @@ a:active {
 #metadataTable tr:hover {
   background-color: #f9f9f9;
 }
+canvas {
+  max-width: 100%;
+  height: auto;
+  border: black;
+  border-radius: 4px;
+  align-items: center;
+}
+
+#bitplanes {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.bitplane-canvas {
+  display: inline-block;
+}
+
+
+
 
 /**********RESPONSIVENESS**********/
 
