@@ -111,7 +111,7 @@ a:active {
 .popup {
   position: absolute;
   padding: 20px;
-  width:300px;
+  width: 300px;
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   z-index: 9999;
@@ -120,31 +120,35 @@ a:active {
 }
 
 .popup.instruction-1 {
-  top: 30px;
-  left: 344px;
+  top: 0%;
+  left: 25%;
 }
 
 .popup.instruction-2 {
-  top: 1px;
-  left: 999px;
+  top: 2%;
+  left: 55%;
 }
 
 .popup.instruction-3 {
-  bottom: 344px;
-  right: 115px;
+  bottom: 35%;
+  right: 10%;
 }
-.popup.instruction-4{
-  bottom:115px;
-  right: 115px; 
+
+.popup.instruction-4 {
+  bottom: 17%;
+  right: 7%;
 }
-.popup.dinstruction-1{
-  top: 30px;
-  left: 344px;
+
+.popup.dinstruction-1 {
+  top: 0%;
+  left: 25%;
 }
-.popup.dinstruction-2{
-  bottom:115px;
-  right: 115px;
+
+.popup.dinstruction-2 {
+  bottom: 17%;
+  right: 7%;
 }
+
 .next-button {
   padding: 5px 10px;
   background-color: #007bff;
