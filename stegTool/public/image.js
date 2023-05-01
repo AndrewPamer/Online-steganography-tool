@@ -27,6 +27,23 @@ function navPage(showPage) {
   }
 }
 
+document.querySelectorAll("canvas").forEach((canvas) => {
+  const defaultImg = new Image();
+  defaultImg.addEventListener("load", () => {
+    const ctx = canvas.getContext("2d");
+    canvas.width = defaultImg.width * 2;
+    canvas.height = defaultImg.height * 2;
+    ctx.drawImage(
+      defaultImg,
+      0,
+      0,
+      defaultImg.width * 2,
+      defaultImg.height * 2
+    );
+  });
+  defaultImg.src = "images/UploadIcon.svg";
+});
+
 document.getElementById("messageInput").addEventListener("input", () => {
   let encodeButton = document.getElementById("encodeButton");
   // Enable the button if there is any text inside the textarea
@@ -54,12 +71,16 @@ async function showImage(image) {
       reader.readAsDataURL(image);
     });
 
-    //Set the class of the image to be after
-    imagePreviewArea.classList.remove("before");
-    imagePreviewArea.classList.add("after");
-
-    //Set the source of the image
-    imagePreviewArea.src = readImageURL;
+    const img = new Image();
+    img.addEventListener("load", () => {
+      imagePreviewArea.classList.remove("before");
+      imagePreviewArea.classList.add("after");
+      const ctx = imagePreviewArea.getContext("2d");
+      imagePreviewArea.width = img.width;
+      imagePreviewArea.height = img.height;
+      ctx.drawImage(img, 0, 0);
+    });
+    img.src = readImageURL;
   } catch (error) {
     console.log(error, " : While Showing The Image");
   }
@@ -83,25 +104,39 @@ function readAsArrayBuffer(file) {
 
 async function encodeImage() {
   try {
-    const encodeReader = await readAsArrayBuffer(encodeImageBlob);
-
     /** Encode Text **/
     const text = document.querySelector("#active textarea").value;
     const encodedText = new TextEncoder().encode(text);
 
-    const methodSelection = document.querySelector("#active #encodingMethod").value;
+    const methodSelection = document.querySelector(
+      "#active #encodingMethod"
+    ).value;
     var encodedImageURL;
-    if(methodSelection == 1) {
-      encodedImageURL = await LSBEncode(encodeReader, encodedText);
-    }
-    else {
-      encodedImageURL = paddingEncode(encodeReader, encodedText);
-    
+    if (methodSelection == 1) {
+      //Use canvas element for LSB
+      const imageToEncode = document.querySelector("#active .image");
+      const encodectx = imageToEncode.getContext("2d");
+
+      //Get the data for each pixel (RGBA)
+      const imageToEncodeData = encodectx.getImageData(
+        0,
+        0,
+        imageToEncode.width,
+        imageToEncode.height
+      );
+
+      //Encode The Image with the data
+      encodedImageURL = LSBEncode(imageToEncodeData, encodedText);
+    } else {
+      //Use File object for padding
+      const encodeReader = await readAsArrayBuffer(encodeImageBlob);
+      encodedImageURL = await paddingEncode(encodeReader, encodedText);
     }
     console.log(encodedImageURL);
 
     /** Create / Update the encoded image **/
     const imgObj = showEncodeImage(encodedImageURL);
+    console.log(imgObj);
     imgObj.addEventListener("load", () => {
       imgObj.scrollIntoView({ behavior: "smooth", block: "end" });
     });
@@ -110,80 +145,111 @@ async function encodeImage() {
   }
 }
 
-function paddingEncode(imgBuffer, txtBuffer) {
-  var combinedBuffers =  new Uint8Array([...new Uint8Array(imgBuffer), ...txtBuffer]);
-  return URL.createObjectURL( new Blob([combinedBuffers], {type: "image/jpg"}));
+async function paddingEncode(imgBuffer, txtBuffer) {
+  const encodeArray = new Uint8Array([
+    ...new Uint8Array(imgBuffer),
+    ...txtBuffer,
+  ]);
+
+  const encodeURL = URL.createObjectURL(
+    new Blob([encodeArray], { type: "image/jpeg" })
+  );
+
+  return encodeURL;
+
+  // console.log(encodeArray);
+  // const k = await imagetest(encodeArray, document.createElement("canvas"));
+  // console.log(k);
+  // return k;
+  // const encodeURL = URL.createObjectURL(
+  //   new Blob([encodeArray], { type: "image/jpeg" })
+  // );
+  // const img = new Image();
+  // img.addEventListener("load", () => {
+  //   const canvas = document.createElement("canvas");
+  //   canvas.width = img.width;
+  //   canvas.height = img.height;
+  //   const ctx = canvas.getContext("2d");
+  //   ctx.drawImage(img, 0, 0);
+  //   return ctx.getImageData(0, 0, canvas.width, canvas.height);
+  // });
+  // img.src = encodeURL;
 }
 
 function imagetest(imageSource, canvas) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.addEventListener("load", () => {
-
       canvas.width = img.width;
       canvas.height = img.height;
-  
+      // console.log(canvas.width, canvas.height);
+
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0);
-      
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = new Uint8Array(imageData.data);
-      
-      resolve(data);
 
-    })
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      resolve(imageData);
+    });
     img.addEventListener("error", () => {
       reject(error);
-    })
-    img.src = URL.createObjectURL( new Blob([imageSource], {type: "image/jpg"}));
-  })
+    });
+    img.src = URL.createObjectURL(
+      new Blob([imageSource], { type: "image/jpg" })
+    );
+  });
 }
 
-async function LSBEncode(imgBuffer, txtBuffer) {
-  try{
-    const canvas = document.createElement("canvas");
-  imgBuffer = new Uint8Array(imgBuffer);
-  const data = await imagetest(imgBuffer, canvas);
-
-    binaryBuffer = ""
-    for(let i = 0; i < txtBuffer.length; i++) {
-      binaryBuffer += txtBuffer[i].toString(2).padStart(8, '0');
+function LSBEncode(ImageData, txtBuffer) {
+  try {
+    console.log(ImageData.data);
+    //Get the binary of the text into one string
+    binaryBuffer = "";
+    for (let i = 0; i < txtBuffer.length; i++) {
+      binaryBuffer += txtBuffer[i].toString(2).padStart(8, "0");
     }
-    //Before we encode the message itself, we first need to encode the length of the message so we know how long it is when we decode.
-    const textsizeBinary = txtBuffer.length.toString(2).padStart(8, '0');
-    // console.log(textsizeBinary);
-
-    for(let i = 0; i < textsizeBinary.length; i++) {
-      data[i] = (data[i] & 0xFE) | parseInt(textsizeBinary[i]);
-      // console.log(data[i]);
+    // console.log(ImageData);
+    let count = 0;
+    for (let i = 0; i < binaryBuffer.length; i++) {
+      if ((i + 1) % 4 === 0) continue;
+      else {
+        ImageData.data[i] =
+          (ImageData.data[i] & 0xfe) | parseInt(binaryBuffer[count]);
+        count++;
+      }
     }
 
-    for(let i = textsizeBinary.length; i < binaryBuffer.length; i++) {
-      data[i] = (data[i] & 0xFE) | parseInt(binaryBuffer[i]);
-      // console.log(data[i]);
-    }
-    var LSBEncodedImage = URL.createObjectURL( new Blob([data], {type: "image/jpg"}));
-    LSBEncodedImage = canvas.toDataURL("image/jpeg")
-  return LSBEncodedImage;
-  }
-  catch(error) {
+    console.log(ImageData.data);
+
+    return ImageData;
+  } catch (error) {
     console.error(error, " : At LSB encode");
   }
 }
 
 function showEncodeImage(imgSrc) {
   const encodeContainer = document.querySelector(".encoded-container");
-  let imgObj = encodeContainer.querySelector("img");
+  //The data coming in could be canvas data or a file.
+  if (typeof imgSrc === "string") {
+  }
+  //The inputted data is LSB encoded pixel data
+  else {
+  }
+
+  let imgObj = encodeContainer.querySelector("canvas");
   if (!imgObj) {
-    //Create the "Encoded Image" Text
     encodeContainer.appendChild(document.createElement("h2")).textContent =
       "Encoded Image";
 
-    //Create the image object
-    imgObj = encodeContainer.appendChild(document.createElement("img"));
+    imgObj = encodeContainer.appendChild(document.createElement("canvas"));
     imgObj.classList.add("encodedImage");
+    imgObj.width = imgSrc.width;
+    imgObj.height = imgSrc.height;
 
-    //Create the Download Button
+    const ctxImgObj = imgObj.getContext("2d");
+    ctxImgObj.putImageData(imgSrc, 0, 0);
+    console.log(imgObj.toDataURL("image/jpeg", 0.8));
+
     const downloadButton = encodeContainer.appendChild(
       document.createElement("button")
     );
@@ -192,8 +258,28 @@ function showEncodeImage(imgSrc) {
     downloadButton.textContent = "Download";
     downloadButton.setAttribute("onClick", "downloadImage()");
   }
-  //Set the source of the image
-  imgObj.src = imgSrc;
+
+  // let imgObj = encodeContainer.querySelector("img");
+  // if (!imgObj) {
+  //   //Create the "Encoded Image" Text
+  //   encodeContainer.appendChild(document.createElement("h2")).textContent =
+  //     "Encoded Image";
+
+  //   //Create the image object
+  //   imgObj = encodeContainer.appendChild(document.createElement("img"));
+  //   imgObj.classList.add("encodedImage");
+
+  //   //Create the Download Button
+  //   const downloadButton = encodeContainer.appendChild(
+  //     document.createElement("button")
+  //   );
+  //   downloadButton.classList.add("button");
+  //   downloadButton.id = "download";
+  //   downloadButton.textContent = "Download";
+  //   downloadButton.setAttribute("onClick", "downloadImage()");
+  // }
+  // //Set the source of the image
+  // imgObj.src = imgSrc;
   return imgObj;
 }
 
@@ -244,7 +330,20 @@ function paddingDecode(decodeImageData) {
   return decodedText;
 }
 
-function LSBdecode(decodeImageData) {}
+async function LSBdecode(decodeImageData) {
+  const canvas = document.createElement("canvas");
+  const data = await imagetest(decodeImageData, canvas);
+  console.log(data);
+  decodeBuffer = "";
+  for (let i = 0; i < 20; i++) {
+    if ((i + 1) % 4 === 0) continue;
+    else {
+      console.log(data[i]);
+      decodeBuffer += data[i] & 1;
+    }
+  }
+  console.log(decodeBuffer);
+}
 
 /********** ANALYSIS **********/
 
@@ -311,8 +410,9 @@ async function imageAnalysis(imageData) {
 function downloadImage() {
   const encodedImage = document.querySelector(".encodedImage");
   const link = document.createElement("a");
-  link.download = "encodedImage.jpg";
-  link.href = encodedImage.src;
+
+  link.href = encodedImage.toDataURL("image/png");
+  link.download = "EncodedImage.png";
   link.click();
 }
 
@@ -323,28 +423,13 @@ function imageInputFromButton() {
   var fileInput = document.querySelector("#active #inputImage");
   var file = fileInput.files[0];
 
-  // Check if the file is a JPG,JPEG, or JFIF
   if (file) {
-    var fileName = file.name;
-    var fileExtension = fileName.split(".").pop().toLowerCase();
-
-    if (
-      fileExtension !== "jpg" &&
-      fileExtension !== "jpeg" &&
-      fileExtension !== "jfif"
-    ) {
-      alert("Please select a JPG or JPEG image file.");
-      fileInput.value = "";
-      return;
+    if (document.querySelector("#active article").className === "encoding") {
+      encodeImageBlob = file;
+      showImage(encodeImageBlob);
     } else {
-      //If file is correct, show image
-      if (document.querySelector("#active article").className === "encoding") {
-        encodeImageBlob = file;
-        showImage(encodeImageBlob);
-      } else {
-        decodeImageBlob = file;
-        showImage(decodeImageBlob);
-      }
+      decodeImageBlob = file;
+      showImage(decodeImageBlob);
     }
   }
 }
@@ -353,10 +438,7 @@ function dropImage(event) {
   event.preventDefault();
   if (event.dataTransfer.items) {
     [...event.dataTransfer.items].forEach((item) => {
-      if (
-        item.kind == "file" &&
-        (item.type === "image/jpeg" || item.type === "image/jpg")
-      ) {
+      if (item.kind == "file") {
         if (
           document.querySelector("#active article").className === "encoding"
         ) {
@@ -366,8 +448,6 @@ function dropImage(event) {
           decodeImageBlob = item.getAsFile();
           showImage(decodeImageBlob);
         }
-      } else {
-        // alert("Please select a JPG or JPEG image file.");
       }
     });
   }
