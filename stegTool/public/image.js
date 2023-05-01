@@ -306,7 +306,12 @@ async function decodeImage() {
       //This function will also check if there isn't any decoded text
       decodedText = LSBdecode(decodeImageData);
     }
-
+    // Extract the bitplanes from the decoded image
+    const decodedImage = new Image();
+    decodedImage.onload = function() {
+      extractBitplanes(decodedImage);
+    };
+    decodedImage.src = URL.createObjectURL(decodeImageBlob);
     //show the decoded text if there is any
     if (decodedText) {
       decodeTextArea.value = decodedText;
@@ -321,6 +326,73 @@ async function decodeImage() {
     console.log(error, " : While Decoding The Image");
   }
 }
+
+function extractBitplanes(image) {
+  // New canvas created to draw the bitplaes
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = image.width;
+  canvas.height = image.height;
+  ctx.drawImage(image, 0, 0);
+
+  const bitplaneContainer = document.createElement("div");
+  bitplaneContainer.id = "bitplanes";
+  bitplaneContainer.style.display = "flex";
+  bitplaneContainer.style.flexDirection = "column"; 
+  bitplaneContainer.style.alignItems = "center";
+  bitplaneContainer.style.justifyContent = "flex-start";
+
+  const title = document.createElement("h2");
+  title.textContent = "Bit-Map";
+  title.style.marginTop = "0";
+  title.style.marginBottom = "10px";
+  bitplaneContainer.appendChild(title);
+
+  const canvasContainer = document.createElement("div");
+  canvasContainer.style.display = "flex";
+  canvasContainer.style.flexDirection = "row"; 
+  canvasContainer.style.alignItems = "center";
+  canvasContainer.style.justifyContent = "flex-start";
+
+  // Create a canvas for each bitplane and append it to the bitplane container
+  for (let i = 0; i < 8; i++) {
+    const bitplaneCanvas = document.createElement("canvas");
+    bitplaneCanvas.width = image.width;
+    bitplaneCanvas.height = image.height;
+    bitplaneCanvas.style.width = "100px";
+    bitplaneCanvas.style.height = "100px";
+    bitplaneCanvas.style.marginRight = "15px"; 
+    bitplaneCanvas.classList.add("bitplane-canvas");
+    const bitplaneCtx = bitplaneCanvas.getContext("2d");
+
+    const imageData = ctx.getImageData(0, 0, image.width, image.height);
+    const pixels = imageData.data;
+    for (let j = 0; j < pixels.length; j += 4) {
+      const pixelValue = pixels[j];
+      const bitValue = (pixelValue >> i) & 1;
+      pixels[j] = bitValue * 255;
+      pixels[j + 1] = bitValue * 255;
+      pixels[j + 2] = bitValue * 255;
+    }
+    bitplaneCtx.putImageData(imageData, 0, 0);
+
+    canvasContainer.appendChild(bitplaneCanvas);
+  }
+
+  bitplaneContainer.appendChild(canvasContainer);
+
+  // Remove any previous bitplane containers before appending the new one
+  const previousBitplaneContainer = document.getElementById("bitplanes");
+  if (previousBitplaneContainer) {
+    previousBitplaneContainer.remove();
+  }
+  const active = document.getElementById("active");
+  active.appendChild(bitplaneContainer);
+}
+
+
+
+
 
 function paddingDecode(decodeImageData) {
   const startOfText = decodeImageData.lastIndexOf(217);
