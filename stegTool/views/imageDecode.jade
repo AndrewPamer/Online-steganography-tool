@@ -4,7 +4,7 @@ div(id="inactive")
             h3 Input Image
             section.image-area(ondrop="dropImage(event)" ondragover="dragImageOver(event)")
                 canvas(class="image before" max-width="200px" src="images/UploadIcon.svg")
-                input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jfif, .jpeg|image/*")
+                input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept="image/*")
         section.message-container
             .message-input
                 label(for="messageInput") Decoded Message 

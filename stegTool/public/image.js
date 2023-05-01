@@ -308,7 +308,7 @@ async function decodeImage() {
     }
     // Extract the bitplanes from the decoded image
     const decodedImage = new Image();
-    decodedImage.onload = function() {
+    decodedImage.onload = function () {
       extractBitplanes(decodedImage);
     };
     decodedImage.src = URL.createObjectURL(decodeImageBlob);
@@ -338,7 +338,7 @@ function extractBitplanes(image) {
   const bitplaneContainer = document.createElement("div");
   bitplaneContainer.id = "bitplanes";
   bitplaneContainer.style.display = "flex";
-  bitplaneContainer.style.flexDirection = "column"; 
+  bitplaneContainer.style.flexDirection = "column";
   bitplaneContainer.style.alignItems = "center";
   bitplaneContainer.style.justifyContent = "flex-start";
 
@@ -350,7 +350,7 @@ function extractBitplanes(image) {
 
   const canvasContainer = document.createElement("div");
   canvasContainer.style.display = "flex";
-  canvasContainer.style.flexDirection = "row"; 
+  canvasContainer.style.flexDirection = "row";
   canvasContainer.style.alignItems = "center";
   canvasContainer.style.justifyContent = "flex-start";
 
@@ -361,7 +361,7 @@ function extractBitplanes(image) {
     bitplaneCanvas.height = image.height;
     bitplaneCanvas.style.width = "100px";
     bitplaneCanvas.style.height = "100px";
-    bitplaneCanvas.style.marginRight = "15px"; 
+    bitplaneCanvas.style.marginRight = "15px";
     bitplaneCanvas.classList.add("bitplane-canvas");
     const bitplaneCtx = bitplaneCanvas.getContext("2d");
 
@@ -389,10 +389,6 @@ function extractBitplanes(image) {
   const active = document.getElementById("active");
   active.appendChild(bitplaneContainer);
 }
-
-
-
-
 
 function paddingDecode(decodeImageData) {
   const startOfText = decodeImageData.lastIndexOf(217);
