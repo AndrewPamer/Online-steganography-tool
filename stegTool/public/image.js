@@ -337,49 +337,79 @@ function extractBitplanes(image) {
 
   const bitplaneContainer = document.createElement("div");
   bitplaneContainer.id = "bitplanes";
-  bitplaneContainer.style.display = "flex";
-  bitplaneContainer.style.flexDirection = "column";
-  bitplaneContainer.style.alignItems = "center";
-  bitplaneContainer.style.justifyContent = "flex-start";
+  // bitplaneContainer.style.display = "flex";
+  // bitplaneContainer.style.flexDirection = "column";
+  // bitplaneContainer.style.alignItems = "center";
+  // bitplaneContainer.style.justifyContent = "flex-start";
 
   const title = document.createElement("h2");
-  title.textContent = "Bit-Map";
+  title.textContent = "Bit Planes";
   title.style.marginTop = "0";
   title.style.marginBottom = "10px";
   bitplaneContainer.appendChild(title);
 
-  const canvasContainer = document.createElement("div");
-  canvasContainer.style.display = "flex";
-  canvasContainer.style.flexDirection = "row";
-  canvasContainer.style.alignItems = "center";
-  canvasContainer.style.justifyContent = "flex-start";
+  const colors = ["Red", "Green", "Blue"];
+  //Three values R G B
+  for (let i = 0; i < 3; i++) {
+    const bitPlaneTitle = document.createElement("h3");
+    bitPlaneTitle.textContent = `${colors[i]} Bit Planes`;
+    bitplaneContainer.appendChild(bitPlaneTitle);
 
-  // Create a canvas for each bitplane and append it to the bitplane container
-  for (let i = 0; i < 8; i++) {
-    const bitplaneCanvas = document.createElement("canvas");
-    bitplaneCanvas.width = image.width;
-    bitplaneCanvas.height = image.height;
-    bitplaneCanvas.style.width = "100px";
-    bitplaneCanvas.style.height = "100px";
-    bitplaneCanvas.style.marginRight = "15px";
-    bitplaneCanvas.classList.add("bitplane-canvas");
-    const bitplaneCtx = bitplaneCanvas.getContext("2d");
-
-    const imageData = ctx.getImageData(0, 0, image.width, image.height);
-    const pixels = imageData.data;
-    for (let j = 0; j < pixels.length; j += 4) {
-      const pixelValue = pixels[j];
-      const bitValue = (pixelValue >> i) & 1;
-      pixels[j] = bitValue * 255;
-      pixels[j + 1] = bitValue * 255;
-      pixels[j + 2] = bitValue * 255;
+    const canvasContainer = document.createElement("div");
+    canvasContainer.classList.add("canvasContainer");
+    //Each value is 1 byte (8bits)
+    for (let j = 0; j < 8; j++) {
+      const bitplaneCanvas = document.createElement("canvas");
+      bitplaneCanvas.width = image.width;
+      bitplaneCanvas.height = image.height;
+      bitplaneCanvas.classList.add("bitplane-canvas");
+      const bitplaneCtx = bitplaneCanvas.getContext("2d");
+      const imageData = ctx.getImageData(0, 0, image.width, image.height);
+      const pixels = imageData.data;
+      //Loop through each pixel
+      for (let k = 0; k < pixels.length; k += 4) {
+        //If the bit is set, we want to set all other bits as set.
+        //Setting them all to 255 will make set bits appear as white because 255 is hex for white, which may be confusing.
+        //For example, An all red image will show white for red bitplanes
+        //thus, we should set bitSet to the opposite of its value.
+        //This will make it more inline with what is expected
+        const bitSet = !((pixels[k + i] >> j) % 2);
+        for (let m = 0; m < 3; m++) {
+          pixels[k + m] = bitSet * 255;
+        }
+      }
+      bitplaneCtx.putImageData(imageData, 0, 0);
+      canvasContainer.appendChild(bitplaneCanvas);
     }
-    bitplaneCtx.putImageData(imageData, 0, 0);
-
-    canvasContainer.appendChild(bitplaneCanvas);
+    bitplaneContainer.appendChild(canvasContainer);
   }
 
-  bitplaneContainer.appendChild(canvasContainer);
+  // Create a canvas for each bitplane and append it to the bitplane container
+  // for (let i = 0; i < 8; i++) {
+  //   const bitplaneCanvas = document.createElement("canvas");
+  //   bitplaneCanvas.width = image.width;
+  //   bitplaneCanvas.height = image.height;
+  //   bitplaneCanvas.style.width = "100px";
+  //   bitplaneCanvas.style.height = "100px";
+  //   bitplaneCanvas.style.marginRight = "15px";
+  //   bitplaneCanvas.classList.add("bitplane-canvas");
+  //   const bitplaneCtx = bitplaneCanvas.getContext("2d");
+
+  //   const imageData = ctx.getImageData(0, 0, image.width, image.height);
+  //   const pixels = imageData.data;
+  //   for (let j = 0; j < pixels.length; j += 4) {
+  //     const pixelValue = pixels[j];
+  //     const bitValue = (pixelValue >> i) & 1;
+  //     pixels[j] = bitValue * 255;
+  //     pixels[j + 1] = bitValue * 255;
+  //     pixels[j + 2] = bitValue * 255;
+  //   }
+  //   bitplaneCtx.putImageData(imageData, 0, 0);
+
+  //   canvasContainer.appendChild(bitplaneCanvas);
+  // }
+
+  // bitplaneContainer.appendChild(canvasContainer);
 
   // Remove any previous bitplane containers before appending the new one
   const previousBitplaneContainer = document.getElementById("bitplanes");

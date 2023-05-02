@@ -321,6 +321,21 @@ canvas {
 
 .bitplane-canvas {
   display: inline-block;
+  margin-right: 10px;
+  width: 200px;
+  height: 200px;
+}
+
+.canvasContainer {
+  overflow-x: scroll;
+  white-space: nowrap;
+  width: auto;
+  margin-bottom: 15px;
+  /* display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap; */
 }
 
 /**********RESPONSIVENESS**********/
