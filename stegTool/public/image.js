@@ -82,7 +82,7 @@ async function showImage(image) {
     });
     img.src = readImageURL;
   } catch (error) {
-    console.log(error, " : While Showing The Image");
+    console.error(error, " : While Showing The Image");
   }
 }
 
@@ -128,20 +128,23 @@ async function encodeImage() {
       //Encode The Image with the data
       encodedImageURL = LSBEncode(imageToEncodeData, encodedText);
     } else {
-      //Use File object for padding
-      const encodeReader = await readAsArrayBuffer(encodeImageBlob);
-      encodedImageURL = await paddingEncode(encodeReader, encodedText);
+      //Use File object for padding JPG images only
+      if (encodeImageBlob.type === "image/jpeg") {
+        const encodeReader = await readAsArrayBuffer(encodeImageBlob);
+        encodedImageURL = await paddingEncode(encodeReader, encodedText);
+      } else {
+        alert("File Padding encode will only work for JPG images");
+        return;
+      }
     }
-    console.log(encodedImageURL);
 
     /** Create / Update the encoded image **/
     const imgObj = showEncodeImage(encodedImageURL);
-    console.log(imgObj);
     imgObj.addEventListener("load", () => {
       imgObj.scrollIntoView({ behavior: "smooth", block: "end" });
     });
   } catch (error) {
-    console.log(error, " : While Encoding The Image");
+    console.error(error, " : While Encoding The Image");
   }
 }
 
@@ -156,24 +159,6 @@ async function paddingEncode(imgBuffer, txtBuffer) {
   );
 
   return encodeURL;
-
-  // console.log(encodeArray);
-  // const k = await imagetest(encodeArray, document.createElement("canvas"));
-  // console.log(k);
-  // return k;
-  // const encodeURL = URL.createObjectURL(
-  //   new Blob([encodeArray], { type: "image/jpeg" })
-  // );
-  // const img = new Image();
-  // img.addEventListener("load", () => {
-  //   const canvas = document.createElement("canvas");
-  //   canvas.width = img.width;
-  //   canvas.height = img.height;
-  //   const ctx = canvas.getContext("2d");
-  //   ctx.drawImage(img, 0, 0);
-  //   return ctx.getImageData(0, 0, canvas.width, canvas.height);
-  // });
-  // img.src = encodeURL;
 }
 
 function imagetest(imageSource, canvas) {
@@ -182,7 +167,6 @@ function imagetest(imageSource, canvas) {
     img.addEventListener("load", () => {
       canvas.width = img.width;
       canvas.height = img.height;
-      // console.log(canvas.width, canvas.height);
 
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0);
@@ -202,24 +186,20 @@ function imagetest(imageSource, canvas) {
 
 function LSBEncode(ImageData, txtBuffer) {
   try {
-    console.log(ImageData.data);
     //Get the binary of the text into one string
     binaryBuffer = "";
     for (let i = 0; i < txtBuffer.length; i++) {
       binaryBuffer += txtBuffer[i].toString(2).padStart(8, "0");
     }
-    // console.log(ImageData);
     let count = 0;
-    for (let i = 0; i < binaryBuffer.length; i++) {
+    for (let i = 0; count < binaryBuffer.length; i++) {
       if ((i + 1) % 4 === 0) continue;
       else {
         ImageData.data[i] =
           (ImageData.data[i] & 0xfe) | parseInt(binaryBuffer[count]);
-        count++;
+        count += 1;
       }
     }
-
-    console.log(ImageData.data);
 
     return ImageData;
   } catch (error) {
@@ -229,27 +209,51 @@ function LSBEncode(ImageData, txtBuffer) {
 
 function showEncodeImage(imgSrc) {
   const encodeContainer = document.querySelector(".encoded-container");
-  //The data coming in could be canvas data or a file.
-  if (typeof imgSrc === "string") {
-  }
-  //The inputted data is LSB encoded pixel data
-  else {
-  }
-
-  let imgObj = encodeContainer.querySelector("canvas");
+  let imgObj = encodeContainer.children[1];
+  let needButton = false;
   if (!imgObj) {
     encodeContainer.appendChild(document.createElement("h2")).textContent =
       "Encoded Image";
+    needButton = true;
+  }
 
-    imgObj = encodeContainer.appendChild(document.createElement("canvas"));
-    imgObj.classList.add("encodedImage");
+  //The data coming in could be canvas data or a file.
+  //if its a file
+  if (typeof imgSrc === "string") {
+    if (imgObj instanceof HTMLCanvasElement) {
+      imgObj.remove();
+      imgObj = undefined;
+      encodeContainer.querySelector("button").remove();
+      needButton = true;
+    }
+
+    if (!imgObj) {
+      //Create the image object
+      imgObj = encodeContainer.appendChild(document.createElement("img"));
+      imgObj.classList.add("encodedImage");
+    }
+    imgObj.src = imgSrc;
+  }
+  //The inputted data is LSB encoded pixel data
+  else {
+    if (imgObj instanceof HTMLImageElement) {
+      imgObj.remove();
+      imgObj = undefined;
+      encodeContainer.querySelector("button").remove();
+      needButton = true;
+    }
+    if (!imgObj) {
+      imgObj = encodeContainer.appendChild(document.createElement("canvas"));
+      imgObj.classList.add("encodedImage");
+    }
+    const ctxImgObj = imgObj.getContext("2d");
+    ctxImgObj.clearRect(0, 0, imgObj.width, imgObj.height);
     imgObj.width = imgSrc.width;
     imgObj.height = imgSrc.height;
-
-    const ctxImgObj = imgObj.getContext("2d");
     ctxImgObj.putImageData(imgSrc, 0, 0);
-    console.log(imgObj.toDataURL("image/jpeg", 0.8));
-
+  }
+  if (needButton) {
+    //Create the Download Button
     const downloadButton = encodeContainer.appendChild(
       document.createElement("button")
     );
@@ -258,28 +262,6 @@ function showEncodeImage(imgSrc) {
     downloadButton.textContent = "Download";
     downloadButton.setAttribute("onClick", "downloadImage()");
   }
-
-  // let imgObj = encodeContainer.querySelector("img");
-  // if (!imgObj) {
-  //   //Create the "Encoded Image" Text
-  //   encodeContainer.appendChild(document.createElement("h2")).textContent =
-  //     "Encoded Image";
-
-  //   //Create the image object
-  //   imgObj = encodeContainer.appendChild(document.createElement("img"));
-  //   imgObj.classList.add("encodedImage");
-
-  //   //Create the Download Button
-  //   const downloadButton = encodeContainer.appendChild(
-  //     document.createElement("button")
-  //   );
-  //   downloadButton.classList.add("button");
-  //   downloadButton.id = "download";
-  //   downloadButton.textContent = "Download";
-  //   downloadButton.setAttribute("onClick", "downloadImage()");
-  // }
-  // //Set the source of the image
-  // imgObj.src = imgSrc;
   return imgObj;
 }
 
@@ -287,24 +269,33 @@ function showEncodeImage(imgSrc) {
 
 async function decodeImage() {
   try {
-    //Read the image to decode as an array buffer
-    const decodeReader = await readAsArrayBuffer(decodeImageBlob);
-
-    //Read the image as a UInt8Array
-    const decodeImageData = new Uint8Array(decodeReader);
-
     //Get the area to show the decoded text
     const decodeTextArea = document.querySelector("#active textarea");
 
     //Check which decoded method we need to do: LSB or file padding
     let decodedText;
-    if (decodeImageData[decodeImageData.length - 1] !== 217) {
+    if (decodeImageBlob.type === "image/jpeg") {
+      //Read the image to decode as an array buffer
+      const decodeReader = await readAsArrayBuffer(decodeImageBlob);
+
+      //Read the image as a UInt8Array
+      const decodeImageData = new Uint8Array(decodeReader);
       //Call file padding decode function
       decodedText = paddingDecode(decodeImageData);
     } else {
       //call LSB decode function
-      //This function will also check if there isn't any decoded text
-      decodedText = LSBdecode(decodeImageData);
+      const imageToDecode = document.querySelector("#active .image");
+      const decodectx = imageToDecode.getContext("2d");
+
+      //Get the data for each pixel (RGBA)
+      const imageToDecodeData = decodectx.getImageData(
+        0,
+        0,
+        imageToDecode.width,
+        imageToDecode.height
+      );
+
+      decodedText = LSBdecode(imageToDecodeData.data);
     }
     // Extract the bitplanes from the decoded image
     const decodedImage = new Image();
@@ -323,7 +314,7 @@ async function decodeImage() {
     //Call the function to show the image analysis
     imageAnalysis(decodeImageBlob);
   } catch (error) {
-    console.log(error, " : While Decoding The Image");
+    console.error(error, " : While Decoding The Image");
   }
 }
 
@@ -337,10 +328,6 @@ function extractBitplanes(image) {
 
   const bitplaneContainer = document.createElement("div");
   bitplaneContainer.id = "bitplanes";
-  // bitplaneContainer.style.display = "flex";
-  // bitplaneContainer.style.flexDirection = "column";
-  // bitplaneContainer.style.alignItems = "center";
-  // bitplaneContainer.style.justifyContent = "flex-start";
 
   const title = document.createElement("h2");
   title.textContent = "Bit Planes";
@@ -363,7 +350,9 @@ function extractBitplanes(image) {
       bitplaneCanvas.width = image.width;
       bitplaneCanvas.height = image.height;
       bitplaneCanvas.classList.add("bitplane-canvas");
-      const bitplaneCtx = bitplaneCanvas.getContext("2d");
+      const bitplaneCtx = bitplaneCanvas.getContext("2d", {
+        willReadFrequently: true,
+      });
       const imageData = ctx.getImageData(0, 0, image.width, image.height);
       const pixels = imageData.data;
       //Loop through each pixel
@@ -384,33 +373,6 @@ function extractBitplanes(image) {
     bitplaneContainer.appendChild(canvasContainer);
   }
 
-  // Create a canvas for each bitplane and append it to the bitplane container
-  // for (let i = 0; i < 8; i++) {
-  //   const bitplaneCanvas = document.createElement("canvas");
-  //   bitplaneCanvas.width = image.width;
-  //   bitplaneCanvas.height = image.height;
-  //   bitplaneCanvas.style.width = "100px";
-  //   bitplaneCanvas.style.height = "100px";
-  //   bitplaneCanvas.style.marginRight = "15px";
-  //   bitplaneCanvas.classList.add("bitplane-canvas");
-  //   const bitplaneCtx = bitplaneCanvas.getContext("2d");
-
-  //   const imageData = ctx.getImageData(0, 0, image.width, image.height);
-  //   const pixels = imageData.data;
-  //   for (let j = 0; j < pixels.length; j += 4) {
-  //     const pixelValue = pixels[j];
-  //     const bitValue = (pixelValue >> i) & 1;
-  //     pixels[j] = bitValue * 255;
-  //     pixels[j + 1] = bitValue * 255;
-  //     pixels[j + 2] = bitValue * 255;
-  //   }
-  //   bitplaneCtx.putImageData(imageData, 0, 0);
-
-  //   canvasContainer.appendChild(bitplaneCanvas);
-  // }
-
-  // bitplaneContainer.appendChild(canvasContainer);
-
   // Remove any previous bitplane containers before appending the new one
   const previousBitplaneContainer = document.getElementById("bitplanes");
   if (previousBitplaneContainer) {
@@ -428,19 +390,22 @@ function paddingDecode(decodeImageData) {
   return decodedText;
 }
 
-async function LSBdecode(decodeImageData) {
-  const canvas = document.createElement("canvas");
-  const data = await imagetest(decodeImageData, canvas);
-  console.log(data);
-  decodeBuffer = "";
-  for (let i = 0; i < 20; i++) {
-    if ((i + 1) % 4 === 0) continue;
-    else {
-      console.log(data[i]);
-      decodeBuffer += data[i] & 1;
+function LSBdecode(decodeImageData) {
+  var decodedString = "";
+  var tempString = "";
+  var bitCount = 0;
+  for (let i = 0; i < decodeImageData.length; i += 4) {
+    for (let j = 0; j < 3; j++) {
+      if (bitCount === 8) {
+        decodedString += String.fromCharCode(parseInt(tempString, 2));
+        tempString = "";
+        bitCount = 0;
+      }
+      tempString += decodeImageData[i + j] & 1;
+      bitCount += 1;
     }
   }
-  console.log(decodeBuffer);
+  return decodedString;
 }
 
 /********** ANALYSIS **********/
@@ -501,16 +466,20 @@ async function imageAnalysis(imageData) {
       .querySelector("table")
       .scrollIntoView({ behavior: "smooth", block: "end" });
   } catch (error) {
-    console.log(error, " : At Image Analysis");
+    console.error(error, " : At Image Analysis");
   }
 }
 
 function downloadImage() {
   const encodedImage = document.querySelector(".encodedImage");
   const link = document.createElement("a");
-
-  link.href = encodedImage.toDataURL("image/png");
-  link.download = "EncodedImage.png";
+  if (encodedImage instanceof HTMLCanvasElement) {
+    link.href = encodedImage.toDataURL("image/png");
+    link.download = "EncodedImage.png";
+  } else {
+    link.href = encodedImage.src;
+    link.download = "EncodedImage.jpg";
+  }
   link.click();
 }
 
