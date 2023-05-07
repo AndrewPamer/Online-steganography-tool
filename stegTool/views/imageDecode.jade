@@ -1,7 +1,7 @@
 div(id="inactive")
     article.decoding
         section.image-container 
-            h3 Input Image
+            h3 Upload Your Image Here
             section.image-area(ondrop="dropImage(event)" ondragover="dragImageOver(event)")
                 canvas(class="image before" max-width="200px" src="images/UploadIcon.svg")
                 input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept="image/*")
@@ -9,8 +9,6 @@ div(id="inactive")
             .message-input
                 label(for="messageInput") Decoded Message 
                 textarea#messageInput(readonly name='messageInput' rows='4' cols='50')
-                span#wordCount 0
-                |  Characters
 
-            button#decodeButton(class="button" onClick="decodeImage()") Decode Image
+            button#decodeButton(class="button" onClick="decodeImage()" disabled) Decode Image
     section.decoded-container

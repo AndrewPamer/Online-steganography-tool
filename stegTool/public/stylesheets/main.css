@@ -4,6 +4,10 @@ body {
   font-family: "Roboto";
 }
 
+button {
+  font-family: inherit;
+}
+
 h1 {
   font-size: 50px;
   color: #059142;
@@ -18,16 +22,14 @@ h2 {
   color: #059142;
   text-align: center;
 }
-h3 {
+h3,
+label {
   font-size: 1.25em;
+  font-weight: bold;
   color: #059142;
   text-align: center;
   margin: 0px 0px 5px 0px;
   padding: 0;
-}
-label {
-  color: white;
-  text-align: center;
 }
 
 label,
@@ -106,47 +108,36 @@ a:active {
 }
 .popup p {
   color: black;
+  font-size: 16px;
 }
 .popup {
+  position: absolute;
+  top: -125px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.popupcontent {
+  width: 300px;
+  height: 200px;
+  padding: 15px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  color: #333;
+  border-radius: 20px;
+}
+
+/* .popup .popupcontent {
   position: absolute;
   padding: 20px;
   width: 300px;
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  z-index: 9999;
   color: #333;
   border-radius: 20px;
-}
-
-.popup.instruction-1 {
-  top: 0%;
-  left: 25%;
-}
-
-.popup.instruction-2 {
-  top: 2%;
-  left: 55%;
-}
-
-.popup.instruction-3 {
-  bottom: 35%;
-  right: 10%;
-}
-
-.popup.instruction-4 {
-  bottom: 17%;
-  right: 7%;
-}
-
-.popup.dinstruction-1 {
-  top: 0%;
-  left: 25%;
-}
-
-.popup.dinstruction-2 {
-  bottom: 17%;
-  right: 7%;
-}
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+} */
 
 .next-button {
   padding: 5px 10px;
@@ -219,6 +210,7 @@ a:active {
   display: flex;
   flex-direction: column;
   width: 50%;
+  position: relative;
 }
 
 .encoding,
@@ -231,11 +223,16 @@ a:active {
 }
 
 .message-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   color: antiquewhite;
+}
+
+.message-input {
+  position: relative;
 }
 
 .message-container textarea {
@@ -269,12 +266,20 @@ a:active {
   align-items: center;
 }
 
+.encode-input {
+  position: relative;
+}
+
 .encoded-container > * {
   margin: 15px;
 }
 
 .encodedImage {
   width: 50%;
+}
+
+#encodeButton {
+  position: relative;
 }
 
 /**********METADATATABLE**********/
