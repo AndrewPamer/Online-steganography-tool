@@ -135,8 +135,10 @@ async function showImage(image) {
       const ctx = imagePreviewArea.getContext("2d");
       imagePreviewArea.width = img.width;
       imagePreviewArea.height = img.height;
-      LSBMaxChars = img.width * img.height * 3;
-      updateTextNum();
+      if (image === encodeImageBlob) {
+        LSBMaxChars = img.width * img.height * 3;
+        updateTextNum();
+      }
       ctx.drawImage(img, 0, 0);
     });
     img.src = readImageURL;
@@ -439,43 +441,12 @@ async function LSBdecode(decodeImageData) {
     };
   });
 }
-//     resolve(e.data);
-//   };
-// });
-// var decodedString = "";
-// var tempString = "";
-// var bitCount = 0;
-// for (let i = 0; i < decodeImageData.length; i += 4) {
-//   for (let j = 0; j < 3; j++) {
-//     if (bitCount === 8) {
-//       decodedString += String.fromCharCode(parseInt(tempString, 2));
-//       tempString = "";
-//       bitCount = 0;
-//     }
-//     tempString += decodeImageData[i + j] & 1;
-//     bitCount += 1;
-//   }
-// }
-// return decodedString;
 
 /********** ANALYSIS **********/
 
 async function imageAnalysis(imageData) {
   try {
     imgShow = document.querySelector("#active canvas");
-    //Create a new Image from the data
-    // const imgShow = await new Promise((resolve, reject) => {
-    //   const img = new Image();
-    //   img.addEventListener("load", () => {
-    //     URL.revokeObjectURL(img.src);
-    //     resolve(img);
-    //   });
-    //   img.addEventListener("error", (error) => {
-    //     URL.revokeObjectURL(img.src);
-    //     reject(error);
-    //   });
-    //   img.src = URL.createObjectURL(decodeImageBlob);
-    // });
 
     //Get the metadata
     const metadata = [
