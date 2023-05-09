@@ -7,6 +7,9 @@ onmessage = function (e) {
   for (let i = 0; i < decodeImageData.length; i += 4) {
     for (let j = 0; j < 3; j++) {
       if (bitCount === 8) {
+        if(parseInt(tempString, 2)>126){
+          break;
+        }
         decodedString += String.fromCharCode(parseInt(tempString, 2));
         tempString = "";
         bitCount = 0;

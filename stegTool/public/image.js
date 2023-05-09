@@ -306,6 +306,7 @@ function showEncodeImage(imgSrc) {
 /********** DECODING **********/
 
 async function decodeImage() {
+  showLoading();
   try {
     //Get the area to show the decoded text
     const decodeTextArea = document.querySelector("#active textarea");
@@ -348,6 +349,7 @@ async function decodeImage() {
   } catch (error) {
     console.error(error, " : While Decoding The Image");
   }
+  hideLoading();
 }
 
 function extractBitplanes(image) {
@@ -547,3 +549,25 @@ function dropImage(event) {
 function dragImageOver(event) {
   event.preventDefault();
 }
+
+let isLoading = false;
+let timeoutId;
+
+function showLoading() {
+  console.log("showing");
+  isLoading = true;
+  timeoutId = setTimeout(() => {
+    if (isLoading) {
+      document.getElementById("loading").style.display = "block";
+    }
+  }, 250); // Show loading after 250ms
+}
+
+function hideLoading() {
+  isLoading = false;
+  clearTimeout(timeoutId);
+  document.getElementById("loading").style.display = "none";
+}
+
+// Call showLoading() before your long-running process
+// Call hideLoading() after your long-running process has completed

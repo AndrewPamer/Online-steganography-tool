@@ -9,6 +9,7 @@ div(id="inactive")
             .message-input
                 label(for="messageInput") Decoded Message 
                 textarea#messageInput(readonly name='messageInput' rows='4' cols='50' autocomplete='off' spellcheck='false')
-
+            #loading
+                .spinner
             button#decodeButton(class="button" onClick="decodeImage()" disabled) Decode Image
     section.decoded-container
