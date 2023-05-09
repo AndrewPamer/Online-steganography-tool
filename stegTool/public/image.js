@@ -184,7 +184,6 @@ async function encodeImage() {
         imageToEncode.height
       );
 
-      console.log(imageToEncodeData);
       //Encode The Image with the data
       encodedImageURL = LSBEncode(imageToEncodeData, encodedText);
     } else {
@@ -336,31 +335,11 @@ async function decodeImage() {
       );
 
       decodedText = await LSBdecode(imageToDecodeData.data).then((e) => {
-        console.log(e);
-        console.log("FINISHED DECODING");
-        decodeTextArea.textContent = e;
+        decodeTextArea.value = e;
       });
     }
     // Extract the bitplanes from the decoded image
     extractBitplanes(document.querySelector("#active canvas"));
-    // console.log(decodeImageBlob);
-    // const decodedImage = new Image();
-
-    // decodedImage.onload = function () {
-    //   setTimeout(() => {
-    //     extractBitplanes(decodedImage);
-    //     URL.revokeObjectURL(decodedImage.src);
-    //   }, 0);
-    // };
-
-    // decodedImage.src = URL.createObjectURL(decodeImageBlob);
-    //show the decoded text if there is any
-    // if (decodedText) {
-    //   decodeTextArea.value = decodedText;
-    // } else {
-    //   //Tell the user if no encoded data is found
-    //   alert("Could not find any encoded data!");
-    // }
 
     //Call the function to show the image analysis
     imageAnalysis(decodeImageBlob);
@@ -370,7 +349,6 @@ async function decodeImage() {
 }
 
 function extractBitplanes(image) {
-  console.log(image);
   // New canvas created to draw the bitplaes
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -456,7 +434,6 @@ async function LSBdecode(decodeImageData) {
     const LSBDecodeWorker = new Worker("LSBdecodeworker.js");
     LSBDecodeWorker.postMessage(decodeImageData);
     LSBDecodeWorker.onmessage = function (e) {
-      console.log(e);
       resolve(e.data);
       LSBDecodeWorker.terminate();
     };
