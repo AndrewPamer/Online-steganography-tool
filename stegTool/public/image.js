@@ -27,20 +27,94 @@ function navPage(showPage) {
   }
 }
 
-document.getElementById("messageInput").addEventListener("input", () => {
-  let encodeButton = document.getElementById("encodeButton");
-  // Enable the button if there is any text inside the textarea
-  if (messageInput.value.length > 0) {
-    encodeButton.removeAttribute("disabled");
+//Set the default image for the canvases
+document.querySelectorAll("canvas").forEach((canvas) => {
+  const defaultImg = new Image();
+  defaultImg.addEventListener("load", () => {
+    const ctx = canvas.getContext("2d");
+    canvas.width = defaultImg.width * 2;
+    canvas.height = defaultImg.height * 2;
+    ctx.drawImage(
+      defaultImg,
+      0,
+      0,
+      defaultImg.width * 2,
+      defaultImg.height * 2
+    );
+  });
+  defaultImg.src = "images/UploadIcon.svg";
+});
+
+//counter to keep track of characters in the message textbox
+var messageInput = document.getElementById("messageInput");
+var wordCount = document.getElementById("wordCount");
+const encodeSelect = document.querySelector("#active select");
+const maxChars = 10000;
+var LSBMaxChars = undefined;
+messageInput.addEventListener("input", () => {
+  const currentChars = messageInput.value.length;
+  if (encodeSelect.value == 1) {
+    if (currentChars >= LSBMaxChars) {
+      messageInput.value = messageInput.value.substring(0, maxChars);
+    }
   } else {
-    encodeButton.setAttribute("disabled", "true");
+    if (currentChars >= maxChars) {
+      messageInput.value = messageInput.value.substring(0, maxChars);
+    }
+  }
+
+  var characters = messageInput.value.split("");
+  //If LSB is selected
+  if (document.querySelector("#active select").value == 1) {
+    wordCount.innerText = LSBMaxChars
+      ? `${characters.length} / ${LSBMaxChars}`
+      : `${characters.length} / `;
+  }
+  //Padding is selected
+  else {
+    wordCount.innerText = `${characters.length} / ${maxChars}`;
   }
 });
+
+//Updates the text area
+function updateTextNum() {
+  const txtToChange = wordCount.innerText.indexOf("/");
+  if (txtToChange != -1) {
+    //LSB
+    if (LSBMaxChars && encodeSelect.value == 1) {
+      wordCount.innerText = `${wordCount.innerText.substring(
+        0,
+        txtToChange
+      )} / ${LSBMaxChars}`;
+    } else {
+      wordCount.innerText = `${wordCount.innerText.substring(
+        0,
+        txtToChange
+      )} / ${maxChars}`;
+    }
+  }
+}
+//Update the text area when the encoding method is changed
+encodeSelect.addEventListener("change", () => {
+  updateTextNum();
+});
+
+// document.getElementById("messageInput").addEventListener("input", () => {
+//   let encodeButton = document.getElementById("encodeButton");
+//   // Enable the button if there is any text inside the textarea
+//   if (messageInput.value.length > 0) {
+//     encodeButton.removeAttribute("disabled");
+//   } else {
+//     encodeButton.setAttribute("disabled", "true");
+//   }
+// });
 
 async function showImage(image) {
   try {
     //Get the img element
     const imagePreviewArea = document.querySelector("#active .image");
+
+    document.querySelector("#active button").removeAttribute("disabled");
 
     //Read the image as a data url
     const readImageURL = await new Promise((resolve, reject) => {
@@ -54,14 +128,20 @@ async function showImage(image) {
       reader.readAsDataURL(image);
     });
 
-    //Set the class of the image to be after
-    imagePreviewArea.classList.remove("before");
-    imagePreviewArea.classList.add("after");
-
-    //Set the source of the image
-    imagePreviewArea.src = readImageURL;
+    const img = new Image();
+    img.addEventListener("load", () => {
+      imagePreviewArea.classList.remove("before");
+      imagePreviewArea.classList.add("after");
+      const ctx = imagePreviewArea.getContext("2d");
+      imagePreviewArea.width = img.width;
+      imagePreviewArea.height = img.height;
+      LSBMaxChars = img.width * img.height * 3;
+      updateTextNum();
+      ctx.drawImage(img, 0, 0);
+    });
+    img.src = readImageURL;
   } catch (error) {
-    console.log(error, " : While Showing The Image");
+    console.error(error, " : While Showing The Image");
   }
 }
 
@@ -83,19 +163,40 @@ function readAsArrayBuffer(file) {
 
 async function encodeImage() {
   try {
-    const encodeReader = await readAsArrayBuffer(encodeImageBlob);
-
     /** Encode Text **/
     const text = document.querySelector("#active textarea").value;
     const encodedText = new TextEncoder().encode(text);
 
-    /** File Padding Encoding **/
-    var combinedBuffers = paddingEncode(encodeReader, encodedText);
+    const methodSelection = document.querySelector(
+      "#active #encodingMethod"
+    ).value;
+    var encodedImageURL;
+    if (methodSelection == 1) {
+      //Use canvas element for LSB
+      const imageToEncode = document.querySelector("#active .image");
+      const encodectx = imageToEncode.getContext("2d");
 
-    /** Create new image **/
-    const encodedImageURL = URL.createObjectURL(
-      new Blob([combinedBuffers], { type: "image/jpg" })
-    );
+      //Get the data for each pixel (RGBA)
+      const imageToEncodeData = encodectx.getImageData(
+        0,
+        0,
+        imageToEncode.width,
+        imageToEncode.height
+      );
+
+      console.log(imageToEncodeData);
+      //Encode The Image with the data
+      encodedImageURL = LSBEncode(imageToEncodeData, encodedText);
+    } else {
+      //Use File object for padding JPG images only
+      if (encodeImageBlob.type === "image/jpeg") {
+        const encodeReader = await readAsArrayBuffer(encodeImageBlob);
+        encodedImageURL = await paddingEncode(encodeReader, encodedText);
+      } else {
+        alert("File Padding encode will only work for JPG images");
+        return;
+      }
+    }
 
     /** Create / Update the encoded image **/
     const imgObj = showEncodeImage(encodedImageURL);
@@ -103,30 +204,92 @@ async function encodeImage() {
       imgObj.scrollIntoView({ behavior: "smooth", block: "end" });
     });
   } catch (error) {
-    console.log(error, " : While Encoding The Image");
+    console.error(error, " : While Encoding The Image");
   }
 }
 
-function paddingEncode(imgBuffer, txtBuffer) {
-  return new Uint8Array([...new Uint8Array(imgBuffer), ...txtBuffer]);
+async function paddingEncode(imgBuffer, txtBuffer) {
+  const encodeArray = new Uint8Array([
+    ...new Uint8Array(imgBuffer),
+    ...txtBuffer,
+  ]);
+
+  const encodeURL = URL.createObjectURL(
+    new Blob([encodeArray], { type: "image/jpeg" })
+  );
+
+  return encodeURL;
 }
 
-function LSB(imgBuffer, txtxBuffer) {
-  //TODO
+function LSBEncode(ImageData, txtBuffer) {
+  try {
+    //Get the binary of the text into one string
+    binaryBuffer = "";
+    for (let i = 0; i < txtBuffer.length; i++) {
+      binaryBuffer += txtBuffer[i].toString(2).padStart(8, "0");
+    }
+    let count = 0;
+    for (let i = 0; count < binaryBuffer.length; i++) {
+      if ((i + 1) % 4 === 0) continue;
+      else {
+        ImageData.data[i] =
+          (ImageData.data[i] & 0xfe) | parseInt(binaryBuffer[count]);
+        count += 1;
+      }
+    }
+
+    return ImageData;
+  } catch (error) {
+    console.error(error, " : At LSB encode");
+  }
 }
 
 function showEncodeImage(imgSrc) {
   const encodeContainer = document.querySelector(".encoded-container");
-  let imgObj = encodeContainer.querySelector("img");
+  let imgObj = encodeContainer.children[1];
+  let needButton = false;
   if (!imgObj) {
-    //Create the "Encoded Image" Text
     encodeContainer.appendChild(document.createElement("h2")).textContent =
       "Encoded Image";
+    needButton = true;
+  }
 
-    //Create the image object
-    imgObj = encodeContainer.appendChild(document.createElement("img"));
-    imgObj.classList.add("encodedImage");
+  //The data coming in could be canvas data or a file.
+  //if its a file
+  if (typeof imgSrc === "string") {
+    if (imgObj instanceof HTMLCanvasElement) {
+      imgObj.remove();
+      imgObj = undefined;
+      encodeContainer.querySelector("button").remove();
+      needButton = true;
+    }
 
+    if (!imgObj) {
+      //Create the image object
+      imgObj = encodeContainer.appendChild(document.createElement("img"));
+      imgObj.classList.add("encodedImage");
+    }
+    imgObj.src = imgSrc;
+  }
+  //The inputted data is LSB encoded pixel data
+  else {
+    if (imgObj instanceof HTMLImageElement) {
+      imgObj.remove();
+      imgObj = undefined;
+      encodeContainer.querySelector("button").remove();
+      needButton = true;
+    }
+    if (!imgObj) {
+      imgObj = encodeContainer.appendChild(document.createElement("canvas"));
+      imgObj.classList.add("encodedImage");
+    }
+    const ctxImgObj = imgObj.getContext("2d");
+    ctxImgObj.clearRect(0, 0, imgObj.width, imgObj.height);
+    imgObj.width = imgSrc.width;
+    imgObj.height = imgSrc.height;
+    ctxImgObj.putImageData(imgSrc, 0, 0);
+  }
+  if (needButton) {
     //Create the Download Button
     const downloadButton = encodeContainer.appendChild(
       document.createElement("button")
@@ -136,8 +299,6 @@ function showEncodeImage(imgSrc) {
     downloadButton.textContent = "Download";
     downloadButton.setAttribute("onClick", "downloadImage()");
   }
-  //Set the source of the image
-  imgObj.src = imgSrc;
   return imgObj;
 }
 
@@ -145,47 +306,71 @@ function showEncodeImage(imgSrc) {
 
 async function decodeImage() {
   try {
-    //Read the image to decode as an array buffer
-    const decodeReader = await readAsArrayBuffer(decodeImageBlob);
-
-    //Read the image as a UInt8Array
-    const decodeImageData = new Uint8Array(decodeReader);
-
     //Get the area to show the decoded text
     const decodeTextArea = document.querySelector("#active textarea");
 
     //Check which decoded method we need to do: LSB or file padding
     let decodedText;
-    if (decodeImageData[decodeImageData.length - 1] !== 217) {
+    if (decodeImageBlob.type === "image/jpeg") {
+      //Read the image to decode as an array buffer
+      const decodeReader = await readAsArrayBuffer(decodeImageBlob);
+
+      //Read the image as a UInt8Array
+      const decodeImageData = new Uint8Array(decodeReader);
       //Call file padding decode function
       decodedText = paddingDecode(decodeImageData);
+      decodedText
+        ? (decodeTextArea.value = decodedText)
+        : alert("No Encoded Text Found!");
     } else {
       //call LSB decode function
-      //This function will also check if there isn't any decoded text
-      decodedText = LSBdecode(decodeImageData);
+      const imageToDecode = document.querySelector("#active .image");
+      const decodectx = imageToDecode.getContext("2d");
+
+      //Get the data for each pixel (RGBA)
+      const imageToDecodeData = decodectx.getImageData(
+        0,
+        0,
+        imageToDecode.width,
+        imageToDecode.height
+      );
+
+      decodedText = await LSBdecode(imageToDecodeData.data).then((e) => {
+        console.log(e);
+        console.log("FINISHED DECODING");
+        decodeTextArea.textContent = e;
+      });
     }
     // Extract the bitplanes from the decoded image
-    const decodedImage = new Image();
-    decodedImage.onload = function() {
-      extractBitplanes(decodedImage);
-    };
-    decodedImage.src = URL.createObjectURL(decodeImageBlob);
+    extractBitplanes(document.querySelector("#active canvas"));
+    // console.log(decodeImageBlob);
+    // const decodedImage = new Image();
+
+    // decodedImage.onload = function () {
+    //   setTimeout(() => {
+    //     extractBitplanes(decodedImage);
+    //     URL.revokeObjectURL(decodedImage.src);
+    //   }, 0);
+    // };
+
+    // decodedImage.src = URL.createObjectURL(decodeImageBlob);
     //show the decoded text if there is any
-    if (decodedText) {
-      decodeTextArea.value = decodedText;
-    } else {
-      //Tell the user if no encoded data is found
-      alert("Could not find any encoded data!");
-    }
+    // if (decodedText) {
+    //   decodeTextArea.value = decodedText;
+    // } else {
+    //   //Tell the user if no encoded data is found
+    //   alert("Could not find any encoded data!");
+    // }
 
     //Call the function to show the image analysis
     imageAnalysis(decodeImageBlob);
   } catch (error) {
-    console.log(error, " : While Decoding The Image");
+    console.error(error, " : While Decoding The Image");
   }
 }
 
 function extractBitplanes(image) {
+  console.log(image);
   // New canvas created to draw the bitplaes
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -195,49 +380,59 @@ function extractBitplanes(image) {
 
   const bitplaneContainer = document.createElement("div");
   bitplaneContainer.id = "bitplanes";
-  bitplaneContainer.style.display = "flex";
-  bitplaneContainer.style.flexDirection = "column"; 
-  bitplaneContainer.style.alignItems = "center";
-  bitplaneContainer.style.justifyContent = "flex-start";
 
   const title = document.createElement("h2");
-  title.textContent = "Bit-Map";
+  title.textContent = "Bit Planes";
   title.style.marginTop = "0";
   title.style.marginBottom = "10px";
   bitplaneContainer.appendChild(title);
 
-  const canvasContainer = document.createElement("div");
-  canvasContainer.style.display = "flex";
-  canvasContainer.style.flexDirection = "row"; 
-  canvasContainer.style.alignItems = "center";
-  canvasContainer.style.justifyContent = "flex-start";
+  const colors = ["Red", "Green", "Blue"];
 
-  // Create a canvas for each bitplane and append it to the bitplane container
-  for (let i = 0; i < 8; i++) {
-    const bitplaneCanvas = document.createElement("canvas");
-    bitplaneCanvas.width = image.width;
-    bitplaneCanvas.height = image.height;
-    bitplaneCanvas.style.width = "100px";
-    bitplaneCanvas.style.height = "100px";
-    bitplaneCanvas.style.marginRight = "15px"; 
-    bitplaneCanvas.classList.add("bitplane-canvas");
-    const bitplaneCtx = bitplaneCanvas.getContext("2d");
+  // const offscreen = new OffscreenCanvas(image.width, image.height);
+  // const offscreenctx = offscreen.getContext("2d");
+  //Three values R G B
+  for (let i = 0; i < 3; i++) {
+    const bitPlaneTitle = document.createElement("h3");
+    bitPlaneTitle.textContent = `${colors[i]} Bit Planes`;
+    bitplaneContainer.appendChild(bitPlaneTitle);
 
-    const imageData = ctx.getImageData(0, 0, image.width, image.height);
-    const pixels = imageData.data;
-    for (let j = 0; j < pixels.length; j += 4) {
-      const pixelValue = pixels[j];
-      const bitValue = (pixelValue >> i) & 1;
-      pixels[j] = bitValue * 255;
-      pixels[j + 1] = bitValue * 255;
-      pixels[j + 2] = bitValue * 255;
+    const canvasContainer = document.createElement("div");
+    canvasContainer.classList.add("canvasContainer");
+
+    //Each value is 1 byte (8bits)
+    for (let j = 0; j < 8; j++) {
+      const bitplaneCanvas = document.createElement("canvas");
+      bitplaneCanvas.width = image.width;
+      bitplaneCanvas.height = image.height;
+      bitplaneCanvas.classList.add("bitplane-canvas");
+
+      const bitplaneCtx = bitplaneCanvas.getContext("2d", {
+        willReadFrequently: true,
+        // alpha: false,
+      });
+
+      const imageData = ctx.getImageData(0, 0, image.width, image.height);
+      const pixels = imageData.data;
+
+      //Loop through each pixel
+      for (let k = 0; k < pixels.length; k += 4) {
+        //If the bit is set, we want to set all other bits as set.
+        //Setting them all to 255 will make set bits appear as white because 255 is hex for white, which may be confusing.
+        //For example, An all red image will show white for red bitplanes
+        //thus, we should set bitSet to the opposite of its value.
+        //This will make it more inline with what is expected
+        const bitSet = !((pixels[k + i] >> j) % 2);
+        for (let m = 0; m < 3; m++) {
+          pixels[k + m] = bitSet * 255;
+        }
+      }
+      bitplaneCtx.putImageData(imageData, 0, 0);
+
+      canvasContainer.appendChild(bitplaneCanvas);
     }
-    bitplaneCtx.putImageData(imageData, 0, 0);
-
-    canvasContainer.appendChild(bitplaneCanvas);
+    bitplaneContainer.appendChild(canvasContainer);
   }
-
-  bitplaneContainer.appendChild(canvasContainer);
 
   // Remove any previous bitplane containers before appending the new one
   const previousBitplaneContainer = document.getElementById("bitplanes");
@@ -248,10 +443,6 @@ function extractBitplanes(image) {
   active.appendChild(bitplaneContainer);
 }
 
-
-
-
-
 function paddingDecode(decodeImageData) {
   const startOfText = decodeImageData.lastIndexOf(217);
   const decodedText = new TextDecoder().decode(
@@ -260,23 +451,54 @@ function paddingDecode(decodeImageData) {
   return decodedText;
 }
 
-function LSBdecode(decodeImageData) {}
+async function LSBdecode(decodeImageData) {
+  return new Promise((resolve) => {
+    const LSBDecodeWorker = new Worker("LSBdecodeworker.js");
+    LSBDecodeWorker.postMessage(decodeImageData);
+    LSBDecodeWorker.onmessage = function (e) {
+      console.log(e);
+      resolve(e.data);
+      LSBDecodeWorker.terminate();
+    };
+  });
+}
+//     resolve(e.data);
+//   };
+// });
+// var decodedString = "";
+// var tempString = "";
+// var bitCount = 0;
+// for (let i = 0; i < decodeImageData.length; i += 4) {
+//   for (let j = 0; j < 3; j++) {
+//     if (bitCount === 8) {
+//       decodedString += String.fromCharCode(parseInt(tempString, 2));
+//       tempString = "";
+//       bitCount = 0;
+//     }
+//     tempString += decodeImageData[i + j] & 1;
+//     bitCount += 1;
+//   }
+// }
+// return decodedString;
 
 /********** ANALYSIS **********/
 
 async function imageAnalysis(imageData) {
   try {
+    imgShow = document.querySelector("#active canvas");
     //Create a new Image from the data
-    const imgShow = await new Promise((resolve, reject) => {
-      const img = new Image();
-      img.addEventListener("load", () => {
-        resolve(img);
-      });
-      img.addEventListener("error", (error) => {
-        reject(error);
-      });
-      img.src = URL.createObjectURL(decodeImageBlob);
-    });
+    // const imgShow = await new Promise((resolve, reject) => {
+    //   const img = new Image();
+    //   img.addEventListener("load", () => {
+    //     URL.revokeObjectURL(img.src);
+    //     resolve(img);
+    //   });
+    //   img.addEventListener("error", (error) => {
+    //     URL.revokeObjectURL(img.src);
+    //     reject(error);
+    //   });
+    //   img.src = URL.createObjectURL(decodeImageBlob);
+    // });
 
     //Get the metadata
     const metadata = [
@@ -320,15 +542,20 @@ async function imageAnalysis(imageData) {
       .querySelector("table")
       .scrollIntoView({ behavior: "smooth", block: "end" });
   } catch (error) {
-    console.log(error, " : At Image Analysis");
+    console.error(error, " : At Image Analysis");
   }
 }
 
 function downloadImage() {
   const encodedImage = document.querySelector(".encodedImage");
   const link = document.createElement("a");
-  link.download = "encodedImage.jpg";
-  link.href = encodedImage.src;
+  if (encodedImage instanceof HTMLCanvasElement) {
+    link.href = encodedImage.toDataURL("image/png");
+    link.download = "EncodedImage.png";
+  } else {
+    link.href = encodedImage.src;
+    link.download = "EncodedImage.jpg";
+  }
   link.click();
 }
 
@@ -339,28 +566,13 @@ function imageInputFromButton() {
   var fileInput = document.querySelector("#active #inputImage");
   var file = fileInput.files[0];
 
-  // Check if the file is a JPG,JPEG, or JFIF
   if (file) {
-    var fileName = file.name;
-    var fileExtension = fileName.split(".").pop().toLowerCase();
-
-    if (
-      fileExtension !== "jpg" &&
-      fileExtension !== "jpeg" &&
-      fileExtension !== "jfif"
-    ) {
-      alert("Please select a JPG or JPEG image file.");
-      fileInput.value = "";
-      return;
+    if (document.querySelector("#active article").className === "encoding") {
+      encodeImageBlob = file;
+      showImage(encodeImageBlob);
     } else {
-      //If file is correct, show image
-      if (document.querySelector("#active article").className === "encoding") {
-        encodeImageBlob = file;
-        showImage(encodeImageBlob);
-      } else {
-        decodeImageBlob = file;
-        showImage(decodeImageBlob);
-      }
+      decodeImageBlob = file;
+      showImage(decodeImageBlob);
     }
   }
 }
@@ -369,10 +581,7 @@ function dropImage(event) {
   event.preventDefault();
   if (event.dataTransfer.items) {
     [...event.dataTransfer.items].forEach((item) => {
-      if (
-        item.kind == "file" &&
-        (item.type === "image/jpeg" || item.type === "image/jpg")
-      ) {
+      if (item.kind == "file") {
         if (
           document.querySelector("#active article").className === "encoding"
         ) {
@@ -382,8 +591,6 @@ function dropImage(event) {
           decodeImageBlob = item.getAsFile();
           showImage(decodeImageBlob);
         }
-      } else {
-        // alert("Please select a JPG or JPEG image file.");
       }
     });
   }

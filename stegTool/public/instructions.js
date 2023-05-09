@@ -1,97 +1,83 @@
-const infoContainer = document.querySelector('.info-container');
+const infoContainer = document.querySelector(".info-container");
 
 const encodeInstructions = [
-  'To encode an image, select the image which you wish to encode. You can click the box below to upload an image from your device, or you can drag and drop an image into the box to upload it.',
-  'Input the text you wish to encode into the image below. For LSB method, the size of the text to encoded will be limited by the size of the uploaded image. File padding method is limited to 30 characters. ',
-  'Choose which encoding method you want to perform.',
-  'Press the encode image button to download your new encyrpted image.'
-];
-
-const encodeCssClasses = [
-  'instruction-1',
-  'instruction-2',
-  'instruction-3',
-  'instruction-4'
+  "Select an image to encode, upload it from your device, or drag and drop it into the box.",
+  "Enter your text to encode below. LSB method size is limited by the size of the uploaded image, while file padding method has a 10000 character limit.",
+  "Choose your encoding method: File padding encoding only works with JPG image files, while LSB works with any image file.",
+  "Press the encode image button below to generate your encoded image!",
 ];
 
 const decodeInstructions = [
-  'To decode an image, select the image which you wish to decode. You can click the box below to upload an image from your device, or you can drag and drop an image into the box to upload it.',
-  'Once you press the Decode button, any encoded text will be displayed along with the metadata and bitplanes of the image.'
-];
-
-const decodeCssClasses = [
-  'dinstruction-1',
-  'dinstruction-2'
+  "Select an image to decode, upload it from your device, or drag and drop it into the box.",
+  "Once you press the Decode button, any encoded text will be displayed along with the metadata and bitplanes of the image.",
 ];
 
 let instructionIndex = 0;
 let popupsShown = false;
 
-infoContainer.addEventListener('click', function() {
+infoContainer.addEventListener("click", function () {
+  console.log(popupsShown);
+  const encodeElements = [
+    document.querySelector("#active .image-container"),
+    document.querySelector("#active .message-input"),
+    document.querySelector("#active .encode-input"),
+    document.querySelector("#active #encodeButton"),
+  ];
+  const decodeElements = [
+    document.querySelector("#active .image-container"),
+    document.querySelector("#active .message-container"),
+  ];
   if (!popupsShown) {
     popupsShown = true;
-    const popup = document.createElement('div');
-    popup.classList.add('popup');
+    const popup = document.createElement("div");
+    popup.classList.add("popup");
 
-    let instructions, cssClasses;
+    let instructions, elements;
 
     if (document.querySelector("#activeButton").innerText === "Encode") {
       instructions = encodeInstructions;
-      cssClasses = encodeCssClasses;
+      elements = encodeElements;
     } else {
       instructions = decodeInstructions;
-      cssClasses = decodeCssClasses;
+      elements = decodeElements;
     }
 
-    popup.classList.add(cssClasses[instructionIndex]);
+    const popupContent = document.createElement("div");
+    popupContent.classList.add("popupcontent");
 
-    const heading = document.createElement('h2');
-    heading.innerText = 'Step ' + (instructionIndex + 1);
+    const heading = document.createElement("h2");
+    heading.innerText = "Step " + (instructionIndex + 1);
 
-    const instruction = document.createElement('p');
-    instruction.classList.add('instruction');
+    const instruction = document.createElement("p");
+    instruction.classList.add("instruction");
     instruction.innerText = instructions[instructionIndex];
 
-    const nextButton = document.createElement('button');
-    nextButton.classList.add('next-button');
-    nextButton.innerText = 'Next';
+    const nextButton = document.createElement("button");
+    nextButton.classList.add("next-button");
+    nextButton.innerText = "Next";
 
-    nextButton.addEventListener('click', function() {
+    nextButton.addEventListener("click", function () {
       instructionIndex++;
       if (instructionIndex < instructions.length) {
-        heading.innerText = 'Step ' + (instructionIndex + 1);
+        heading.innerText = "Step " + (instructionIndex + 1);
         instruction.innerText = instructions[instructionIndex];
-        popup.classList.remove(cssClasses[instructionIndex - 1]);
-        popup.classList.add(cssClasses[instructionIndex]);
+        popup.remove();
+        elements[instructionIndex].appendChild(popup);
       } else {
-        document.body.removeChild(popup);
-        instructionIndex = 0; 
+        popup.remove();
+        instructionIndex = 0;
+        popupsShown = false;
       }
-      
+
       if (instructionIndex >= instructions.length) {
         instructionIndex = 0;
       }
     });
 
-    popup.appendChild(heading);
-    popup.appendChild(instruction);
-    popup.appendChild(nextButton);
-
-    document.body.appendChild(popup);
+    popupContent.appendChild(heading);
+    popupContent.appendChild(instruction);
+    popupContent.appendChild(nextButton);
+    popup.appendChild(popupContent);
+    elements[instructionIndex].appendChild(popup);
   }
-});
-
-const encodeButton = document.querySelector('#encodeButton');
-const decodeButton = document.querySelector('#decodeButton');
-
-encodeButton.addEventListener('click', function() {
-  popupsShown = false;
-});
-
-decodeButton.addEventListener('click', function() {
-  popupsShown = false;
-});
-
-document.addEventListener('click', function() {
-  popupsShown = false;
 });

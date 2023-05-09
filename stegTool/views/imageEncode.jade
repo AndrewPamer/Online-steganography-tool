@@ -1,23 +1,22 @@
 div(id="active")
     article.encoding
         section.image-container
-            h3 Input Image
+            h3 Upload Your Image Here
             section.image-area(ondrop="dropImage(event)" ondragover="dragImageOver(event)" width="200px")
-                img(class="image before" max-width="200px" src="images/UploadIcon.svg")
-                input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept=".jpg, .jfif, .jpeg|image/*")
+                canvas(class="image before" max-width="200px" src="images/UploadIcon.svg")
+                input(id="inputImage" name="inputImage" type="file" onchange="imageInputFromButton()" accept="image/*")
         section.message-container
             .message-input
-                label(for="messageInput") Input message 
+                label(for="messageInput") Enter Your message here
                 textarea#messageInput(placeholder="Input Message Here" name='messageInput' rows='4' cols='50')
-                span#wordCount 0
-                |  
+                span#wordCount 0 / 
 
             //Encode Select
             .encode-input
                 label(for="encodingMethod") Select Encoding Method 
                 select#encodingMethod(name="encodingMethod" style="background-color: #0e1013; color: white")
-                    option(value="Option1" style="background-color: #0e1013; color: white") LSB 
-                    option(value="Option2" style="background-color: #0e1013; color: white") File Padding
+                    option(value="1" style="background-color: #0e1013; color: white") LSB 
+                    option(value="2" style="background-color: #0e1013; color: white") File Padding
             button#encodeButton(class="button" onClick="encodeImage()" disabled) Encode Image
     section.encoded-container
         
