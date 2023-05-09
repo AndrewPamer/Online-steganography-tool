@@ -2,7 +2,8 @@ onmessage = function (e) {
   var decodedString = "";
   var tempString = "";
   var bitCount = 0;
-  decodeImageData = e.data;
+  var decodeImageData = e.data;
+
   for (let i = 0; i < decodeImageData.length; i += 4) {
     for (let j = 0; j < 3; j++) {
       if (bitCount === 8) {

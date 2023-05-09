@@ -336,8 +336,9 @@ async function decodeImage() {
       );
 
       decodedText = await LSBdecode(imageToDecodeData.data).then((e) => {
+        console.log(e);
         console.log("FINISHED DECODING");
-        // decodeTextArea.value = e;
+        decodeTextArea.textContent = e;
       });
     }
     // Extract the bitplanes from the decoded image
@@ -398,6 +399,7 @@ function extractBitplanes(image) {
 
     const canvasContainer = document.createElement("div");
     canvasContainer.classList.add("canvasContainer");
+
     //Each value is 1 byte (8bits)
     for (let j = 0; j < 8; j++) {
       const bitplaneCanvas = document.createElement("canvas");
@@ -409,38 +411,25 @@ function extractBitplanes(image) {
         willReadFrequently: true,
         // alpha: false,
       });
+
       const imageData = ctx.getImageData(0, 0, image.width, image.height);
       const pixels = imageData.data;
-      const worker = new Worker("bitplaneworker.js");
-      worker.postMessage([imageData.data, i, j]);
-      worker.onmessage = function (e) {
-        bitplaneCtx.putImageData(
-          new ImageData(e.data, imageData.width, imageData.height),
-          0,
-          0
-        );
-        canvasContainer.appendChild(bitplaneCanvas);
-        worker.terminate();
-      };
+
       //Loop through each pixel
-      // for (let k = 0; k < pixels.length; k += 4) {
-      //   //If the bit is set, we want to set all other bits as set.
-      //   //Setting them all to 255 will make set bits appear as white because 255 is hex for white, which may be confusing.
-      //   //For example, An all red image will show white for red bitplanes
-      //   //thus, we should set bitSet to the opposite of its value.
-      //   //This will make it more inline with what is expected
-      //   const bitSet = !((pixels[k + i] >> j) % 2);
-      //   for (let m = 0; m < 3; m++) {
-      //     pixels[k + m] = bitSet * 255;
-      //   }
-      // }
-      // bitplaneCtx.putImageData(imageData, 0, 0);
-      // // offscreenctx.putImageData(imageData, 0, 0);
+      for (let k = 0; k < pixels.length; k += 4) {
+        //If the bit is set, we want to set all other bits as set.
+        //Setting them all to 255 will make set bits appear as white because 255 is hex for white, which may be confusing.
+        //For example, An all red image will show white for red bitplanes
+        //thus, we should set bitSet to the opposite of its value.
+        //This will make it more inline with what is expected
+        const bitSet = !((pixels[k + i] >> j) % 2);
+        for (let m = 0; m < 3; m++) {
+          pixels[k + m] = bitSet * 255;
+        }
+      }
+      bitplaneCtx.putImageData(imageData, 0, 0);
 
-      // // console.log(offscreen);
-
-      // // bitplaneCtx.drawImage(offscreen, 0, 0);
-      // canvasContainer.appendChild(bitplaneCanvas);
+      canvasContainer.appendChild(bitplaneCanvas);
     }
     bitplaneContainer.appendChild(canvasContainer);
   }
@@ -467,6 +456,7 @@ async function LSBdecode(decodeImageData) {
     const LSBDecodeWorker = new Worker("LSBdecodeworker.js");
     LSBDecodeWorker.postMessage(decodeImageData);
     LSBDecodeWorker.onmessage = function (e) {
+      console.log(e);
       resolve(e.data);
       LSBDecodeWorker.terminate();
     };
