@@ -560,7 +560,7 @@ function showLoading() {
     if (isLoading) {
       document.getElementById("loading").style.display = "block";
     }
-  }, 250); // Show loading after 250ms
+  }, 50); // Show loading after 250ms
 }
 
 function hideLoading() {
